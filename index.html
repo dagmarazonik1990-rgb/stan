@@ -5,78 +5,92 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>STAN</title>
   <link rel="manifest" href="manifest.json">
+
   <style>
-    body { font-family: -apple-system, system-ui, Arial; margin: 24px; }
-    h1 { margin: 0 0 14px; }
-    textarea { width: 100%; height: 140px; padding: 12px; font-size: 16px; }
-    button { margin-top: 10px; padding: 10px 14px; font-size: 16px; }
-    .box { margin-top: 14px; padding: 14px; border: 1px solid #ddd; border-radius: 10px; }
-    .row { margin: 8px 0; }
-    .tag { display:inline-block; font-size:12px; padding:3px 8px; border-radius:999px; border:1px solid #ddd; margin-right:8px; }
-    .muted { opacity: .7; }
+    body {
+      font-family: -apple-system, system-ui, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    h1 { margin-bottom: 10px; }
+
+    textarea {
+      width: 100%;
+      height: 150px;
+      padding: 10px;
+      font-size: 14px;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px 16px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .box {
+      margin-top: 16px;
+      padding: 14px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      white-space: pre-wrap;
+    }
+
+    .muted {
+      opacity: .6;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
-
 <body>
-  <h1>STAN 😈</h1>
-  <div class="muted">Wklep sytuację (min. 100 znaków). Kliknij „Analizuj”.</div>
 
-  <textarea id="t" placeholder="Opisz sytuację..."></textarea>
-  <br />
-  <button onclick="a()">Analizuj</button>
+<h1>STAN 😈</h1>
 
-  <div class="box" id="w">Tu pojawi się wynik.</div>
+<div class="muted">
+Wklej sytuację (min. 100 znaków). Kliknij „Analizuj”.
+</div>
 
-  <script>
-    function hasAny(text, arr){
-      for (let i=0;i<arr.length;i++) if (text.includes(arr[i])) return true;
-      return false;
+<textarea id="t" placeholder="Opisz sytuację..."></textarea>
+<br>
+<button onclick="a()">Analizuj</button>
+
+<div id="w" class="box">Tu pojawi się wynik.</div>
+
+<script>
+async function a(){
+  const t = document.getElementById("t").value.trim();
+  const w = document.getElementById("w");
+
+  if (t.length < 100) {
+    w.innerText = "Napisz minimum 100 znaków.";
+    return;
+  }
+
+  w.innerText = "STAN analizuje… 🧠⚡";
+
+  try {
+    const r = await fetch("/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: t })
+    });
+
+    const data = await r.json();
+
+    if (!r.ok) {
+      w.innerText = data?.error || "Błąd analizy.";
+      return;
     }
 
-    function a(){
-      const x = (document.getElementById("t").value || "").trim();
-      const w = document.getElementById("w");
+    w.innerText = data.result || "Brak odpowiedzi.";
+  } catch (e) {
+    w.innerText = "Błąd połączenia.";
+  }
+}
+</script>
 
-      if (x.length < 100){
-        w.innerHTML = '<span class="tag">STOP</span> Napisz minimum <b>100 znaków</b>.';
-        return;
-      }
-
-      const t = x.toLowerCase();
-
-      const emoWords = ["boję","panika","wkur","złość","nienaw","smutek","płacz","stres","nerw","lęk","mam dość","nie dam rady"];
-      const factWords = ["data","kwota","godzina","fakt","screen","dowód","mail","umowa","konto","nr","termin","zrzut","link"];
-      const urgeWords = ["natychmiast","już","teraz","zaraz","od razu","muszę","nie mogę czekać"];
-
-      const emoHigh = hasAny(t, emoWords) || hasAny(t, urgeWords);
-      const hasFacts = hasAny(t, factWords) || t.match(/\d/);
-
-      // 1) Fakty
-      const facts = hasFacts
-        ? "Masz jakieś fakty w tekście (liczby / konkret). Dobrze."
-        : "Za mało konkretu. Dodaj: CO się stało, KIEDY, z kim, jaki dowód (screen/mail/kwota).";
-
-      // 2) Emocje
-      const emo = emoHigh
-        ? "Emocje są wysokie. Pauza 10 minut: woda, oddech, dopiero potem decyzje."
-        : "Emocje wyglądają na względnie stabilne. Można działać.";
-
-      // 3) Ty (humor + pazur)
-      const you = emoHigh
-        ? "Tryb: 🔥 turbo. Jesteś o krok od „napiszę WSZYSTKIM”. Uspokajamy silnik."
-        : "Tryb: 😏 ogarniamy. Bez dramy, ale z godnością.";
-
-      // 4) Głos rozsądku (1 krok)
-      const step = hasFacts
-        ? "Zrób 1 rzecz w 24h: spisz 3 fakty + 1 dowód i dopiero wtedy wybierz reakcję."
-        : "Zrób 1 rzecz w 24h: dopisz brakujące fakty (kiedy/co/kim/dowód), inaczej STAN nie wróży.";
-
-      w.innerHTML =
-        '<div class="row"><span class="tag">1) FAKTY</span> ' + facts + '</div>' +
-        '<div class="row"><span class="tag">2) EMOCJE</span> ' + emo + '</div>' +
-        '<div class="row"><span class="tag">3) TY</span> ' + you + '</div>' +
-        '<div class="row"><span class="tag">4) KROK</span> ' + step + '</div>';
-    }
-  </script>
 </body>
 </html>
