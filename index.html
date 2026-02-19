@@ -3,96 +3,100 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>STAN – Agent decyzyjny AI</title>
+<title>STAN</title>
 
 <style>
 body{
   margin:0;
-  font-family: system-ui, -apple-system, sans-serif;
-  background: linear-gradient(180deg,#07162d,#0d274d);
+  font-family:-apple-system,BlinkMacSystemFont;
+  background:#0B0F1A;
   color:white;
   padding:20px;
 }
-
-h1{
-  margin-bottom:4px;
+.card{
+  background:#111827;
+  padding:18px;
+  border-radius:14px;
+  margin-top:16px;
 }
-
-.subtitle{
-  opacity:.7;
-  margin-bottom:20px;
+button{
+  width:100%;
+  padding:16px;
+  border:none;
+  border-radius:14px;
+  font-size:16px;
+  margin-top:16px;
+  background:linear-gradient(90deg,#4f8cff,#6b9dff);
+  color:white;
 }
-
 textarea{
   width:100%;
-  min-height:120px;
+  padding:16px;
   border-radius:14px;
   border:none;
-  padding:16px;
-  font-size:16px;
-  background:#0f2a4d;
-  color:white;
   resize:none;
-}
-
-button{
-  margin-top:16px;
-  width:100%;
-  padding:14px;
-  font-size:16px;
-  border-radius:14px;
-  border:none;
-  background:linear-gradient(90deg,#4f8cff,#2563eb);
+  background:#1e293b;
   color:white;
-  cursor:pointer;
+  min-height:120px;
 }
-
-.card{
-  margin-top:20px;
-  background:#0f2a4d;
-  padding:16px;
-  border-radius:14px;
+.title{
+  font-size:28px;
+  font-weight:700;
 }
-
-.result-title{
-  font-weight:600;
+.subtitle{
+  opacity:.6;
+  margin-bottom:16px;
+}
+.section-title{
+  font-weight:700;
   margin-bottom:8px;
-  opacity:.8;
-}
-
-.muted{
-  opacity:.8;
 }
 </style>
 </head>
 
 <body>
 
-<h1>STAN</h1>
+<div class="title">STAN</div>
 <div class="subtitle">Agent decyzyjny AI</div>
 
-<textarea id="input" placeholder="Opisz sytuację. Co się stało? Co chcesz osiągnąć? Jakie masz ograniczenia?"></textarea>
-
+<textarea id="input" placeholder="Opisz sytuację..."></textarea>
 <button onclick="analyze()">Analiza →</button>
 
 <div class="card">
-  <div class="result-title">Analiza</div>
-  <div id="analysis" class="muted">Tu pojawi się analiza.</div>
+<div class="section-title">Analiza</div>
+<div id="analysis">Tu pojawi się analiza.</div>
 </div>
 
 <div class="card">
-  <div class="result-title">Ryzyko</div>
-  <div id="risk" class="muted">Tu pojawi się ocena ryzyka.</div>
+<div class="section-title">Ryzyko</div>
+<div id="risk">Tu pojawi się ocena ryzyka.</div>
 </div>
 
 <div class="card">
-  <div class="result-title">Rekomendacja</div>
-  <div id="recommendation" class="muted">Tu pojawi się rekomendacja.</div>
+<div class="section-title">Rekomendacja</div>
+<div id="recommendation">Tu pojawi się rekomendacja.</div>
 </div>
 
 <script>
-async function analyze(){
+function runStanDemo(text){
+  const emotional = text.length < 120;
 
+  if(emotional){
+    return {
+      analysis: "Zatrzymajmy chaos. Widzę emocje, mało danych. To temat decyzji pod presją. Najpierw fakty, potem ruch.",
+      risk: "Ryzyko decyzji impulsywnej: średnie / wysokie.",
+      recommendation: "Odpowiedz: 1) Jakie są twarde ograniczenia (czas/pieniądze)? 2) Jakie są 2 realne opcje A/B? Potem robimy plan 7 i 30 dni."
+    };
+  } else {
+    return {
+      analysis: "Sytuacja ma strukturę. Możemy ją rozbić na cele, ograniczenia i opcje. Decyzja wymaga chłodnej sekwencji działań.",
+      risk: "Ryzyko: kontrolowane, jeśli oddzielisz emocje od faktów.",
+      recommendation: "Zrób tabelę: Opcja A / Opcja B → koszt / zysk / ryzyko. Wybierz świadomie, nie reaktywnie."
+    };
+  }
+}
+
+function analyze(){
   const text = document.getElementById("input").value.trim();
 
   if(text.length < 20){
@@ -100,57 +104,11 @@ async function analyze(){
     return;
   }
 
-  document.getElementById("analysis").innerText = "Analizuję...";
-  document.getElementById("risk").innerText = "-";
-  document.getElementById("recommendation").innerText = "-";
+  const result = runStanDemo(text);
 
-  try{
-
-    const res = await fetch("/api/analyze",{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ text })
-    });
-
-    if(!res.ok){
-      throw new Error("Status " + res.status);
-    }
-
-    const data = await res.json();
-
-    document.getElementById("analysis").innerText = data.analysis || "Brak analizy.";
-    document.getElementById("risk").innerText = data.risk || "-";
-    document.getElementById("recommendation").innerText = data.recommendation || "-";
-
-  }catch(err){
-
-    // Jeśli API padnie — fallback demo STAN
-    const demo = generateDemoStan(text);
-
-    document.getElementById("analysis").innerText = demo.analysis;
-    document.getElementById("risk").innerText = demo.risk;
-    document.getElementById("recommendation").innerText = demo.recommendation;
-
-  }
-}
-
-// Demo inteligencja STAN (bez API)
-function generateDemoStan(text){
-
-  const emotional = text.includes("boję") || text.includes("zła") || text.includes("wkurz");
-
-  return {
-    analysis: emotional
-      ? "Opis wskazuje na silne emocje. Decyzja podjęta teraz może być bardziej reakcją niż strategią."
-      : "Sytuacja wymaga chłodnej analizy. Kluczowe jest oddzielenie faktów od interpretacji.",
-
-    risk: emotional
-      ? "Ryzyko decyzji impulsywnej: wysokie."
-      : "Ryzyko błędnej oceny przy braku danych: średnie.",
-
-    recommendation:
-      "Oddziel emocję od działania. Ustal: 1) czego chcesz, 2) czego nie zaakceptujesz, 3) jaki pierwszy mały krok możesz wykonać w 7 dni."
-  };
+  document.getElementById("analysis").innerText = result.analysis;
+  document.getElementById("risk").innerText = result.risk;
+  document.getElementById("recommendation").innerText = result.recommendation;
 }
 </script>
 
