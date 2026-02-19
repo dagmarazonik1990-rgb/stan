@@ -4,93 +4,134 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>STAN</title>
-  <link rel="manifest" href="manifest.json">
+
+  <meta name="theme-color" content="#0B0F1A" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
 
   <style>
-    body {
+    :root{
+      --bg:#0B0F1A;
+      --surface:#111827;
+      --border:#1F2937;
+      --text:#E5E7EB;
+      --muted:#9CA3AF;
+      --accent:#4DA3FF;
+    }
+
+    body{
+      margin:0;
+      background: radial-gradient(1200px 600px at 50% -10%, rgba(77,163,255,.12), transparent 55%), var(--bg);
       font-family: -apple-system, system-ui, sans-serif;
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
+      color:var(--text);
+      padding:20px;
     }
 
-    h1 { margin-bottom: 10px; }
-
-    textarea {
-      width: 100%;
-      height: 150px;
-      padding: 10px;
-      font-size: 14px;
+    .wrap{
+      max-width:700px;
+      margin:auto;
     }
 
-    button {
-      margin-top: 10px;
-      padding: 10px 16px;
-      font-size: 14px;
-      cursor: pointer;
+    .card{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:20px;
+      padding:18px;
+      margin-bottom:16px;
     }
 
-    .box {
-      margin-top: 16px;
-      padding: 14px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      white-space: pre-wrap;
+    h1{
+      margin:0 0 4px 0;
+      font-size:28px;
     }
 
-    .muted {
-      opacity: .6;
-      font-size: 14px;
-      margin-bottom: 10px;
+    .subtitle{
+      color:var(--muted);
+      margin-bottom:20px;
+    }
+
+    textarea{
+      width:100%;
+      border-radius:16px;
+      border:1px solid var(--border);
+      background:#0F172A;
+      color:var(--text);
+      padding:14px;
+      font-size:14px;
+      resize:none;
+    }
+
+    button{
+      margin-top:12px;
+      width:100%;
+      padding:14px;
+      border-radius:16px;
+      border:1px solid var(--accent);
+      background:rgba(77,163,255,.15);
+      color:var(--text);
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .result-title{
+      font-weight:700;
+      margin-bottom:6px;
+    }
+
+    .muted{
+      color:var(--muted);
     }
   </style>
 </head>
+
 <body>
+  <div class="wrap">
+    <h1>STAN</h1>
+    <div class="subtitle">Agent decyzyjny AI</div>
 
-<h1>STAN 😈</h1>
+    <div class="card">
+      <textarea id="input" rows="6"
+        placeholder="Opisz sytuację. Co się stało, co chcesz osiągnąć, jakie masz ograniczenia?"></textarea>
+      <button onclick="analyze()">Analiza →</button>
+    </div>
 
-<div class="muted">
-Wklej sytuację (min. 100 znaków). Kliknij „Analizuj”.
-</div>
+    <div class="card">
+      <div class="result-title">Analiza</div>
+      <div id="analysis" class="muted">Tu pojawi się analiza.</div>
+    </div>
 
-<textarea id="t" placeholder="Opisz sytuację..."></textarea>
-<br>
-<button onclick="a()">Analizuj</button>
+    <div class="card">
+      <div class="result-title">Ryzyko</div>
+      <div id="risk" class="muted">Tu pojawi się ocena ryzyka.</div>
+    </div>
 
-<div id="w" class="box">Tu pojawi się wynik.</div>
+    <div class="card">
+      <div class="result-title">Rekomendacja</div>
+      <div id="recommendation" class="muted">Tu pojawi się rekomendacja.</div>
+    </div>
+  </div>
 
-<script>
-async function a(){
-  const t = document.getElementById("t").value.trim();
-  const w = document.getElementById("w");
+  <script>
+    async function analyze(){
+      const text = document.getElementById("input").value;
 
-  if (t.length < 100) {
-    w.innerText = "Napisz minimum 100 znaków.";
-    return;
-  }
+      if(text.length < 30){
+        alert("Napisz trochę więcej 🙂");
+        return;
+      }
 
-  w.innerText = "STAN analizuje… 🧠⚡";
+      const res = await fetch("/api/analyze", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ text })
+      });
 
-  try {
-    const r = await fetch("/api/analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: t })
-    });
+      const data = await res.json();
 
-    const data = await r.json();
-
-    if (!r.ok) {
-      w.innerText = data?.error || "Błąd analizy.";
-      return;
+      document.getElementById("analysis").innerText = data.analysis;
+      document.getElementById("risk").innerText = data.risk;
+      document.getElementById("recommendation").innerText = data.recommendation;
     }
-
-    w.innerText = data.result || "Brak odpowiedzi.";
-  } catch (e) {
-    w.innerText = "Błąd połączenia.";
-  }
-}
-</script>
-
+  </script>
 </body>
 </html>
