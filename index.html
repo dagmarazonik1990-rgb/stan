@@ -1,510 +1,858 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>STAN</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>STAN</title>
 
-<style>
-:root{
-  --bg:#070A12;
-  --bg2:#0B0F1A;
-  --text:#EAF0FF;
-  --muted:rgba(234,240,255,0.65);
-  --a1:#7B5CFF;
-  --a2:#B256FF;
+  <meta name="theme-color" content="#0B0F1A" />
+  <link rel="manifest" href="manifest.json" />
 
-  --orbGlow1: rgba(123,92,255,0.40);
-  --orbGlow2: rgba(178,86,255,0.35);
+  <!-- iOS PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="STAN" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
 
-  --ritual: 0; /* 0/1 ustawiane JS-em */
-}
+  <style>
+    :root{
+      --bg:#070A12;
+      --bg2:#0B0F1A;
+      --surface: rgba(255,255,255,0.06);
+      --stroke: rgba(255,255,255,0.10);
+      --text:#EAF0FF;
+      --muted: rgba(234,240,255,0.72);
+      --muted2: rgba(234,240,255,0.55);
+      --a1:#7B5CFF;
+      --a2:#B256FF;
 
-*{box-sizing:border-box;}
-html,body{height:100%;}
+      --r: 22px;
+      --shadow: 0 18px 60px rgba(0,0,0,0.45);
 
-body{
-  margin:0;
-  font-family:system-ui,-apple-system,Segoe UI,Roboto;
-  color:var(--text);
-  background:
-    radial-gradient(900px 600px at 70% 15%, rgba(178,86,255,0.18), transparent 60%),
-    linear-gradient(180deg,var(--bg),var(--bg2));
-  padding:22px 16px 40px;
-  transition: filter 400ms ease, background 400ms ease;
-}
+      /* live avatar motion */
+      --mx: 0;  /* -1..1 */
+      --my: 0;  /* -1..1 */
+      --idle: 0;
+    }
 
-.wrap{max-width:560px;margin:auto;}
-.title{font-size:54px;font-weight:900;margin:0 0 4px;}
-.subtitle{color:var(--muted);margin:0 0 18px;}
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background:
+        radial-gradient(1200px 700px at 65% 18%, rgba(178,86,255,0.18), transparent 60%),
+        radial-gradient(900px 520px at 22% 70%, rgba(123,92,255,0.14), transparent 55%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+      padding: 22px 16px 40px;
+      padding-top: max(22px, env(safe-area-inset-top));
+      padding-bottom: max(40px, env(safe-area-inset-bottom));
+      overflow-x: hidden;
+    }
 
-/* ===== avatar box: bez ramek ===== */
-.avatarBox{
-  width:100%;
-  aspect-ratio:1/1;
-  border-radius:28px;
-  overflow:hidden;
-  position:relative;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  margin-bottom:16px;
-  background: transparent;
-}
+    .wrap{ max-width:560px; margin:0 auto; }
 
-/* ===== ORB ===== */
-.orb{
-  width:72%;
-  aspect-ratio:1/1;
-  border-radius:50%;
-  position:relative;
+    .title{
+      font-size:56px;
+      line-height:0.95;
+      font-weight:900;
+      letter-spacing:0.02em;
+      margin:0;
+    }
+    .subtitle{
+      margin:8px 0 18px;
+      color:var(--muted2);
+      font-size:18px;
+    }
 
-  background:
-    radial-gradient(circle at 35% 30%, rgba(255,255,255,0.18), transparent 45%),
-    radial-gradient(circle at 50% 55%, rgba(178,86,255,0.45), transparent 60%),
-    radial-gradient(circle at 50% 50%, rgba(123,92,255,0.75), #141422 70%, #000 100%);
+    .hero{
+      border-radius: var(--r);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      padding: 16px;
+    }
 
-  box-shadow:
-    0 0 90px var(--orbGlow1),
-    0 0 160px var(--orbGlow2);
+    .rowTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .rowTop h3{
+      margin:0;
+      font-size:22px;
+      letter-spacing:0.01em;
+    }
+    .pill{
+      padding:9px 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.18);
+      color: rgba(234,240,255,0.78);
+      font-weight:800;
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .pill.me{
+      border-color: rgba(178,86,255,0.35);
+      box-shadow: 0 0 0 1px rgba(123,92,255,0.12) inset;
+    }
 
-  animation: orbBreath 6s ease-in-out infinite;
-  transition: transform .25s ease, box-shadow .25s ease, filter .25s ease;
-}
+    .avatarBox{
+      width:100%;
+      aspect-ratio: 1 / 1;
+      border-radius: calc(var(--r) - 6px);
+      border:1px solid rgba(255,255,255,0.12);
+      background:
+        radial-gradient(650px 420px at 50% 40%, rgba(178,86,255,0.22), transparent 60%),
+        radial-gradient(800px 520px at 50% 110%, rgba(123,92,255,0.18), transparent 60%),
+        rgba(0,0,0,0.22);
+      position:relative;
+      overflow:hidden;
+      margin-bottom: 12px;
 
-@keyframes orbBreath{
-  0%{transform:scale(1);}
-  50%{transform:scale(1.06);}
-  100%{transform:scale(1);}
-}
+      display:flex;
+      align-items:center;
+      justify-content:center;
 
-.orb:after{
-  content:"";
-  position:absolute;
-  left:-10%;
-  right:-10%;
-  height:2px;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.8),transparent);
-  animation: scan 5s linear infinite;
-  opacity:0.6;
-}
-@keyframes scan{
-  0%{top:15%;}
-  50%{top:85%;}
-  100%{top:15%;}
-}
+      user-select:none;
+      -webkit-user-select:none;
+      -webkit-touch-callout:none;
+      touch-action: manipulation;
+    }
 
-/* ===== SEMI ===== */
-.semi{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  object-position:center 20%;
-  animation:breathe 8s ease-in-out infinite;
-  transform: scale(1.03);
-  filter: saturate(1.05) contrast(1.02);
-  will-change: transform;
-}
+    .hint{
+      position:absolute;
+      left:50%;
+      bottom:14px;
+      transform:translateX(-50%);
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:13px;
+      color: rgba(234,240,255,0.72);
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.10);
+      backdrop-filter: blur(10px);
+    }
 
-@keyframes breathe{
-  0%{transform:scale(1.03);}
-  50%{transform:scale(1.06);}
-  100%{transform:scale(1.03);}
-}
+    /* ORB */
+    .orb{
+      width:72%;
+      aspect-ratio:1/1;
+      border-radius:999px;
+      position:relative;
+      background:
+        radial-gradient(circle at calc(35% + var(--mx)*6%) calc(30% + var(--my)*6%), rgba(255,255,255,0.22), transparent 35%),
+        radial-gradient(circle at 50% 55%, rgba(178,86,255,0.55), rgba(123,92,255,0.28) 45%, rgba(0,0,0,0.35) 76%),
+        radial-gradient(circle at 50% 50%, rgba(10,12,22,0.0), rgba(0,0,0,0.55) 70%);
+      box-shadow:
+        0 0 80px rgba(123,92,255,0.35),
+        0 0 140px rgba(178,86,255,0.20),
+        inset 0 0 35px rgba(255,255,255,0.10);
+      border:1px solid rgba(255,255,255,0.12);
+      transform: translateY(calc(var(--idle) * 2px));
+      animation: orbBreath 6.8s ease-in-out infinite;
+      will-change: transform;
+    }
+    .orb::after{
+      content:"";
+      position:absolute;
+      left:-10%;
+      right:-10%;
+      top:50%;
+      height:3px;
+      transform: translateY(-50%);
+      background: linear-gradient(90deg, transparent, rgba(234,240,255,0.20), rgba(178,86,255,0.55), rgba(234,240,255,0.20), transparent);
+      box-shadow: 0 0 18px rgba(178,86,255,0.55);
+      opacity:0.85;
+      animation: scan 4.2s ease-in-out infinite;
+      border-radius:99px;
+    }
+    @keyframes scan{
+      0%,100%{ opacity:0.55; filter: blur(0px); }
+      50%{ opacity:0.95; filter: blur(0.2px); }
+    }
+    @keyframes orbBreath{
+      0%,100%{ transform: translateY(calc(var(--idle) * 2px)) scale(1.00); }
+      50%{ transform: translateY(calc(var(--idle) * 2px - 2px)) scale(1.015); }
+    }
 
-/* overlay “presence” – delikatny glow bez ramek */
-.presenceGlow{
-  position:absolute;
-  inset:-15%;
-  background:
-    radial-gradient(closest-side at 50% 45%, rgba(123,92,255,0.18), transparent 62%),
-    radial-gradient(closest-side at 55% 55%, rgba(178,86,255,0.12), transparent 66%);
-  filter: blur(18px);
-  opacity: 0.75;
-  pointer-events:none;
-  mix-blend-mode: screen;
-}
+    /* SEMI */
+    .semiWrap{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: rgba(0,0,0,0.18);
+    }
+    .semiImg{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform:
+        translate(calc(var(--mx) * 10px), calc(var(--my) * 8px))
+        scale(1.10);
+      filter: contrast(1.03) saturate(1.06);
+      will-change: transform;
+    }
+    .semiVignette{
+      position:absolute;
+      inset:-1px;
+      pointer-events:none;
+      background:
+        radial-gradient(120% 120% at 50% 30%, rgba(0,0,0,0.0) 45%, rgba(0,0,0,0.45) 100%),
+        radial-gradient(70% 55% at 50% 100%, rgba(178,86,255,0.20), rgba(0,0,0,0.0) 55%);
+      mix-blend-mode: multiply;
+    }
 
-/* oczy */
-.eyes{
-  position:absolute;
-  top:42%;
-  left:50%;
-  transform:translateX(-50%);
-  width:120px;
-  display:flex;
-  justify-content:space-between;
-  pointer-events:none;
-}
+    textarea{
+      width:100%;
+      min-height:112px;
+      resize:vertical;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.22);
+      color: var(--text);
+      padding: 14px;
+      font-size: 16px;
+      line-height: 1.35;
+      outline:none;
+    }
+    textarea::placeholder{ color: rgba(234,240,255,0.55); }
 
-.eye{
-  width:14px;height:14px;border-radius:50%;
-  background:#4de0ff;
-  box-shadow:0 0 12px #4de0ff;
-  animation: blink 14s infinite;
-  transition: transform 180ms ease;
-}
-@keyframes blink{
-  0%,97%,100%{transform:scaleY(1);}
-  98%{transform:scaleY(0.1);}
-}
+    .btn{
+      width:100%;
+      margin-top:12px;
+      border:none;
+      border-radius:18px;
+      padding: 16px 18px;
+      font-size:20px;
+      font-weight:900;
+      color:white;
+      background: linear-gradient(90deg, var(--a1), var(--a2));
+      box-shadow: 0 18px 50px rgba(123,92,255,0.28);
+      cursor:pointer;
+      user-select:none;
+      -webkit-user-select:none;
+    }
+    .btn:active{ transform: translateY(1px); }
 
-/* ===== inputs ===== */
-textarea{
-  width:100%;
-  min-height:110px;
-  border-radius:18px;
-  border:none;
-  background:rgba(0,0,0,0.25);
-  color:white;
-  padding:14px;
-  font-size:16px;
-  margin-bottom:12px;
-  outline:none;
-}
+    .row{
+      display:flex;
+      gap:10px;
+      margin-top:10px;
+    }
+    .smallBtn{
+      flex:1;
+      border-radius:16px;
+      padding: 12px 14px;
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: rgba(234,240,255,0.86);
+      font-weight:900;
+      cursor:pointer;
+      user-select:none;
+      -webkit-user-select:none;
+    }
+    .smallBtn.primary{
+      background: linear-gradient(90deg, rgba(123,92,255,0.35), rgba(178,86,255,0.25));
+      border-color: rgba(255,255,255,0.14);
+    }
+    .smallBtn:active{ transform: translateY(1px); }
 
-button{
-  width:100%;
-  padding:16px;
-  border:none;
-  border-radius:18px;
-  font-size:18px;
-  font-weight:800;
-  color:white;
-  background:linear-gradient(90deg,var(--a1),var(--a2));
-  cursor:pointer;
-  margin-bottom:10px;
-}
+    .chips{
+      margin-top:12px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .chip{
+      font-size:13px;
+      color: rgba(234,240,255,0.72);
+      padding: 9px 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.16);
+      backdrop-filter: blur(10px);
+    }
+    .chip.good{ border-color: rgba(69,212,131,0.35); }
+    .chip.warn{ border-color: rgba(240,192,74,0.35); }
 
-.row{
-  display:flex;
-  gap:10px;
-}
-.row button{
-  flex:1;
-  background:rgba(255,255,255,0.07);
-  border:1px solid rgba(255,255,255,0.10);
-  margin-bottom:0;
-}
-.row button.primary{
-  background:linear-gradient(90deg,var(--a1),var(--a2));
-  border:none;
-}
+    .grid{ margin-top:16px; display:grid; gap:12px; }
+    .card{
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.05);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+      padding: 16px;
+    }
+    .card h3{ margin:0 0 8px; font-size:34px; }
+    .card .text{
+      margin:0;
+      color: rgba(234,240,255,0.74);
+      font-size:16px;
+      line-height:1.42;
+      white-space: pre-wrap;
+    }
 
-.card{
-  margin-top:14px;
-  padding:14px;
-  border-radius:18px;
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.08);
-}
-
-h3{margin:0 0 6px 0;}
-.text{white-space:pre-wrap;color:var(--muted);margin:0;}
-
-/* ===== Ritual Dark (auto po 22) ===== */
-body.ritual{
-  filter: saturate(0.95) brightness(0.92) contrast(1.05);
-}
-body.ritual .subtitle{ color: rgba(234,240,255,0.55); }
-body.ritual .orb{
-  animation-duration: 8s;
-  filter: saturate(0.9) brightness(0.95);
-  box-shadow:
-    0 0 70px rgba(90,70,160,0.35),
-    0 0 120px rgba(120,60,160,0.22);
-}
-body.ritual .presenceGlow{
-  opacity: 0.55;
-}
-</style>
+    /* unlock overlay */
+    .unlockOverlay{
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
+      background: radial-gradient(900px 520px at 50% 30%, rgba(178,86,255,0.22), rgba(0,0,0,0.88) 70%);
+      backdrop-filter: blur(10px);
+    }
+    .unlockPanel{
+      width:min(560px, 100%);
+      border-radius: 22px;
+      border:1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.38);
+      box-shadow: 0 22px 80px rgba(0,0,0,0.55);
+      padding: 16px;
+    }
+    .unlockPanel .h{
+      font-size:18px;
+      font-weight:900;
+      margin:0 0 6px;
+    }
+    .unlockPanel .p{
+      margin:0 0 12px;
+      color: rgba(234,240,255,0.72);
+      line-height:1.35;
+      font-size:14px;
+    }
+    .unlockPanel .urow{
+      display:flex;
+      gap:10px;
+    }
+    .unlockPanel button{
+      flex:1;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: rgba(234,240,255,0.9);
+      padding: 12px 14px;
+      font-weight:900;
+      font-size:15px;
+    }
+    .unlockPanel button.primary{
+      background: linear-gradient(90deg, rgba(123,92,255,0.55), rgba(178,86,255,0.45));
+      border-color: rgba(255,255,255,0.14);
+      color: white;
+    }
+  </style>
 </head>
 
 <body>
-<div class="wrap">
-  <div class="title">STAN</div>
-  <div class="subtitle">Agent decyzyjny AI • obecność</div>
+  <div class="wrap">
+    <div class="title">STAN</div>
+    <div class="subtitle" id="sub">Agent decyzyjny AI • obecność</div>
 
-  <div class="avatarBox" id="avatarBox" aria-label="STAN avatar">
-    <div class="orb" id="orb"></div>
+    <div class="hero">
+      <div class="rowTop">
+        <h3>STAN avatar</h3>
+        <div class="pill me" id="avatarPill">Domyślnie: ORB</div>
+      </div>
+
+      <div class="avatarBox" id="avatarBox" aria-label="STAN avatar">
+        <div class="orb" id="orb"></div>
+
+        <div class="semiWrap" id="semiWrap" style="display:none;">
+          <img class="semiImg" id="semiImg" alt="STAN semi-human" />
+          <div class="semiVignette"></div>
+        </div>
+
+        <div class="hint">Przytrzymaj 1s: przełącz avatar • 2s: przełącz ME</div>
+      </div>
+
+      <textarea id="input" placeholder="Opisz sytuację. Co się stało, co chcesz osiągnąć, jakie masz ograniczenia?"></textarea>
+      <button class="btn" id="analyzeBtn">Analiza →</button>
+
+      <div class="row">
+        <button class="smallBtn primary" id="listenBtn">🎙 Słuchaj</button>
+        <button class="smallBtn" id="speakBtn">🔊 Mów</button>
+        <button class="smallBtn" id="ambientBtn">🌌 Ambient</button>
+        <button class="smallBtn" id="stopBtn">⏹ Stop</button>
+      </div>
+
+      <div class="chips">
+        <div class="chip warn" id="modeChip">Tryb: DEMO (bez API)</div>
+        <div class="chip good" id="pwaChip">PWA: —</div>
+        <div class="chip" id="voiceChip">Audio: —</div>
+        <div class="chip" id="verChip">Wersja: 20260223-HARDCORE</div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h3>Analiza</h3>
+          <p class="text" id="analysis">Tu pojawi się analiza.</p>
+        </div>
+        <div class="card">
+          <h3>Ryzyko</h3>
+          <p class="text" id="risk">Tu pojawi się ocena ryzyka.</p>
+        </div>
+        <div class="card">
+          <h3>Rekomendacja</h3>
+          <p class="text" id="recommendation">Tu pojawi się rekomendacja.</p>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <textarea id="input" placeholder="Opisz sytuację..."></textarea>
-
-  <button class="primary" onclick="run()">Analiza →</button>
-
-  <div class="row">
-    <button onclick="toggleAvatar()">👁 Avatar</button>
-    <button onclick="toggleAmbient()">🌌 Ambient</button>
-    <button onclick="stopAmbient()">⏹ Stop</button>
+  <div class="unlockOverlay" id="unlockOverlay" style="display:none;">
+    <div class="unlockPanel">
+      <p class="h">🔓 Odblokuj dźwięk (iOS)</p>
+      <p class="p">iPhone blokuje audio dopóki nie dotkniesz ekranu. Kliknij raz — uruchomię ambient i test dźwięku.</p>
+      <div class="urow">
+        <button class="primary" id="unlockBtn">Odblokuj + Ambient</button>
+        <button id="unlockNoAmbientBtn">Odblokuj bez ambientu</button>
+      </div>
+      <p class="p" style="margin-top:10px; opacity:0.85;">
+        Tip: jeśli nadal cisza — sprawdź głośność + czy nie leci na AirPods.
+      </p>
+    </div>
   </div>
-
-  <div class="card">
-    <h3>Analiza</h3>
-    <p class="text" id="analysis">—</p>
-  </div>
-
-  <div class="card">
-    <h3>Ryzyko</h3>
-    <p class="text" id="risk">—</p>
-  </div>
-
-  <div class="card">
-    <h3>Rekomendacja</h3>
-    <p class="text" id="rec">—</p>
-  </div>
-</div>
 
 <script>
-/* =========================
-   Ritual Dark auto po 22:00
-========================= */
-function applyRitualByTime(){
-  const hour = new Date().getHours();
-  // Ritual od 22 do 5:59
-  const ritual = (hour >= 22 || hour < 6);
-  document.body.classList.toggle("ritual", ritual);
+const $ = (id) => document.getElementById(id);
+
+const analyzeBtn = $("analyzeBtn");
+const input = $("input");
+const analysis = $("analysis");
+const risk = $("risk");
+const recommendation = $("recommendation");
+
+const avatarBox = $("avatarBox");
+const orbEl = $("orb");
+const semiWrap = $("semiWrap");
+const semiImg = $("semiImg");
+const avatarPill = $("avatarPill");
+
+const listenBtn = $("listenBtn");
+const speakBtn = $("speakBtn");
+const ambientBtn = $("ambientBtn");
+const stopBtn = $("stopBtn");
+
+const pwaChip = $("pwaChip");
+const voiceChip = $("voiceChip");
+
+const unlockOverlay = $("unlockOverlay");
+const unlockBtn = $("unlockBtn");
+const unlockNoAmbientBtn = $("unlockNoAmbientBtn");
+
+function setVoiceChip(txt){ voiceChip.textContent = txt; }
+
+function isStandalonePWA(){
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
 }
-applyRitualByTime();
-setInterval(applyRitualByTime, 60 * 1000);
-
-/* =========================
-   Avatar switch: orb <-> semi
-   Semi plik: avatar-semi.png
-========================= */
-let mode = "orb";
-const avatarBox = document.getElementById("avatarBox");
-
-function renderOrb(){
-  avatarBox.innerHTML = `<div class="orb" id="orb"></div>`;
-  mode = "orb";
+function setPwaChip(){
+  pwaChip.textContent = "PWA: " + (isStandalonePWA() ? "TAK" : "NIE");
 }
 
-function renderSemi(){
-  avatarBox.innerHTML = `
-    <img src="avatar-semi.png" class="semi" id="semi">
-    <div class="presenceGlow"></div>
-    <div class="eyes" id="eyes">
-      <div class="eye"></div>
-      <div class="eye"></div>
-    </div>
-  `;
-  mode = "semi";
-  // po renderze odpal tracking spojrzenia
-  setupGazeTracking();
+/* ============ AVATAR MODE (ME vs others) ============ */
+let meMode = localStorage.getItem("stan_me") === "1";
+let avatar = localStorage.getItem("stan_avatar") || "orb";
+
+if(meMode && !localStorage.getItem("stan_avatar_forced")){
+  avatar = "semi";
+}
+
+function setAvatarPill(){
+  if(avatar === "semi"){
+    avatarPill.textContent = (meMode ? "Premium: SEMI-HUMAN (ME)" : "Premium: SEMI-HUMAN");
+  } else {
+    avatarPill.textContent = "Domyślnie: ORB";
+  }
+  avatarPill.classList.toggle("me", meMode);
+}
+
+async function loadFirstImage(imgEl, candidates){
+  for(const src of candidates){
+    const ok = await new Promise((resolve)=>{
+      const t = new Image();
+      t.onload = ()=>resolve(true);
+      t.onerror = ()=>resolve(false);
+      t.src = src;
+    });
+    if(ok){ imgEl.src = src; return src; }
+  }
+  return null;
+}
+
+async function ensureSemiLoaded(){
+  const candidates = [
+    "avatar-semi.png",
+    "avatar-semi.PNG",
+    "avatar semi.PNG",
+    "stan-semi-human.png"
+  ];
+  const src = await loadFirstImage(semiImg, candidates);
+  if(!src){
+    setVoiceChip("Avatar: brak pliku semi (wrzuć avatar-semi.png)");
+    avatar = "orb";
+  }
+}
+
+async function renderAvatar(){
+  setAvatarPill();
+  if(avatar === "semi"){
+    await ensureSemiLoaded();
+    orbEl.style.display = "none";
+    semiWrap.style.display = "flex";
+  } else {
+    semiWrap.style.display = "none";
+    orbEl.style.display = "block";
+  }
 }
 
 function toggleAvatar(){
-  if(mode === "orb") renderSemi();
-  else renderOrb();
+  avatar = (avatar === "orb") ? "semi" : "orb";
+  localStorage.setItem("stan_avatar", avatar);
+  localStorage.setItem("stan_avatar_forced", "1");
+  renderAvatar();
 }
 
-/* =========================
-   Semi patrzy za kursorem/palcem
-========================= */
-let gazeSetupDone = false;
-
-function setupGazeTracking(){
-  // nie rejestruj 100x listenerów
-  if(gazeSetupDone) return;
-  gazeSetupDone = true;
-
-  function updateGaze(clientX, clientY){
-    if(mode !== "semi") return;
-    const eyesWrap = document.getElementById("eyes");
-    if(!eyesWrap) return;
-
-    const rect = avatarBox.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-
-    const dx = (clientX - cx) / rect.width;
-    const dy = (clientY - cy) / rect.height;
-
-    const max = 6; // px
-    const x = Math.max(-1, Math.min(1, dx)) * max;
-    const y = Math.max(-1, Math.min(1, dy)) * max;
-
-    const eyes = avatarBox.querySelectorAll(".eye");
-    eyes.forEach(e => {
-      e.style.transform = `translate(${x}px, ${y}px)`;
-    });
-  }
-
-  window.addEventListener("mousemove", (e)=> updateGaze(e.clientX, e.clientY), {passive:true});
-  window.addEventListener("touchmove", (e)=>{
-    if(!e.touches || !e.touches[0]) return;
-    updateGaze(e.touches[0].clientX, e.touches[0].clientY);
-  }, {passive:true});
+let pressTimer1=null, pressTimer2=null;
+function startPress(){
+  clearTimeout(pressTimer1); clearTimeout(pressTimer2);
+  pressTimer1 = setTimeout(()=>{ toggleAvatar(); }, 900);
+  pressTimer2 = setTimeout(()=>{
+    meMode = !meMode;
+    localStorage.setItem("stan_me", meMode ? "1" : "0");
+    localStorage.removeItem("stan_avatar_forced");
+    avatar = meMode ? "semi" : "orb";
+    localStorage.setItem("stan_avatar", avatar);
+    renderAvatar();
+    setVoiceChip(meMode ? "ME: ON (semi default)" : "ME: OFF (orb default)");
+  }, 1900);
 }
+function endPress(){ clearTimeout(pressTimer1); clearTimeout(pressTimer2); }
 
-/* =========================
-   Scroll: subtelny drift
-========================= */
-window.addEventListener("scroll", ()=>{
-  const y = window.scrollY * 0.01;
-  const orb = document.querySelector(".orb");
-  const semi = document.getElementById("semi");
+avatarBox.addEventListener("touchstart", startPress, {passive:true});
+avatarBox.addEventListener("touchend", endPress);
+avatarBox.addEventListener("mousedown", startPress);
+avatarBox.addEventListener("mouseup", endPress);
+avatarBox.addEventListener("mouseleave", endPress);
 
-  if(orb){
-    orb.style.transform = `translateY(${y}px) scale(1.03)`;
-  }
-  if(semi){
-    semi.style.transform = `translateY(${y}px) scale(1.04)`;
+/* Presence motion: follow pointer slightly */
+let lastMoveAt = performance.now();
+function setMotionFromEvent(e){
+  const rect = avatarBox.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width;
+  const y = (e.clientY - rect.top) / rect.height;
+  const mx = Math.max(-1, Math.min(1, (x - 0.5) * 2));
+  const my = Math.max(-1, Math.min(1, (y - 0.5) * 2));
+  document.documentElement.style.setProperty("--mx", mx.toFixed(3));
+  document.documentElement.style.setProperty("--my", my.toFixed(3));
+  lastMoveAt = performance.now();
+}
+avatarBox.addEventListener("pointermove", setMotionFromEvent);
+avatarBox.addEventListener("touchmove", (ev)=>{
+  if(ev.touches && ev.touches[0]){
+    setMotionFromEvent({clientX: ev.touches[0].clientX, clientY: ev.touches[0].clientY});
   }
 }, {passive:true});
 
-/* =========================
-   Tryb skupienia przy analizie
-========================= */
-function focusMode(){
-  document.body.style.filter = "brightness(0.93)";
-  setTimeout(()=>{ document.body.style.filter = ""; }, 900);
+function idleDrift(){
+  const t = performance.now() / 1000;
+  const idle = (performance.now() - lastMoveAt > 1200)
+    ? (Math.sin(t*0.9)*0.6 + Math.sin(t*0.33)*0.4)
+    : 0.12*Math.sin(t*0.7);
+  document.documentElement.style.setProperty("--idle", idle.toFixed(3));
+  requestAnimationFrame(idleDrift);
+}
+idleDrift();
+
+/* ============ SPEAK (TTS) ============ */
+const canSpeak = "speechSynthesis" in window;
+function speak(text){
+  if(!canSpeak){ setVoiceChip("Audio: brak speechSynthesis"); return; }
+  try{ window.speechSynthesis.cancel(); }catch(e){}
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "pl-PL";
+  u.rate = 1.03;
+  u.pitch = 0.95;
+  try{ window.speechSynthesis.speak(u); setVoiceChip("Audio: speak() OK"); }
+  catch(e){ setVoiceChip("Audio: speak() ERROR"); }
 }
 
-/* =========================
-   STAN DEMO (bez API)
-========================= */
-function run(){
-  const t = (document.getElementById("input").value || "").trim();
+/* ============ LISTEN (STT) ============ */
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let listening = false;
+const canListen = !!SpeechRecognition;
 
-  if(t.length < 40){
-    document.getElementById("analysis").textContent =
-      "Za mało danych. Podaj: cel + ograniczenia + 2 opcje (A/B).";
-    document.getElementById("risk").textContent =
-      "Ryzyko: zgadywanie. A ja nie zgaduję.";
-    document.getElementById("rec").textContent =
-      "Dopisz 3 krótkie zdania i kliknij Analiza jeszcze raz.";
-    reactAmbient();
-    return;
-  }
+if(canListen){
+  recognition = new SpeechRecognition();
+  recognition.lang = "pl-PL";
+  recognition.interimResults = false;
+  recognition.continuous = false;
 
-  focusMode();
-
-  document.getElementById("analysis").textContent =
-    "Oddziel fakty od emocji. Teraz potrzebuję kryteriów wyboru.";
-  document.getElementById("risk").textContent =
-    "Największe ryzyko: decyzja pod wpływem impulsu lub bez kryteriów.";
-  document.getElementById("rec").textContent =
-    "Plan: 3 kryteria → ocena A/B (1–10) → 1 mikro-test → decyzja w 7 dni.";
-
-  reactAmbient();
+  recognition.onstart = ()=> {
+    listening = true;
+    listenBtn.textContent = "🎙 Słucham…";
+    setVoiceChip("Mikrofon: ON");
+  };
+  recognition.onresult = (e)=> {
+    const t = e.results?.[0]?.[0]?.transcript || "";
+    if(t) input.value = t;
+  };
+  recognition.onerror = (e)=> { setVoiceChip("Mikrofon: ERROR (" + (e.error || "unknown") + ")"); };
+  recognition.onend = ()=> {
+    listening = false;
+    listenBtn.textContent = "🎙 Słuchaj";
+    setVoiceChip("Mikrofon: OFF");
+  };
 }
 
-/* =========================
-   Ambient: WebAudio (stereo pływanie)
-   100% bezkosztowo
-========================= */
-let audioCtx = null;
-let masterGain = null;
-let panner = null;
-let osc1 = null;
-let osc2 = null;
-let noiseNode = null;
-let ambientOn = false;
+/* ============ AMBIENT (WebAudio hardcore unlock) ============ */
+let audioCtx=null, masterGain=null, ambientOn=false, unlocked=false;
 
 function initAmbient(){
   if(audioCtx) return;
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if(!Ctx){ setVoiceChip("Audio: brak WebAudio"); return; }
 
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  audioCtx = new Ctx();
   masterGain = audioCtx.createGain();
-  masterGain.gain.value = 0.00; // start od zera
+  masterGain.gain.value = 0.0;
+  masterGain.connect(audioCtx.destination);
 
-  // stereo panner
-  panner = audioCtx.createStereoPanner();
-  panner.pan.value = 0;
+  // noise bed
+  const noiseBuf = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
+  const data = noiseBuf.getChannelData(0);
+  for(let i=0;i<data.length;i++) data[i] = (Math.random()*2 - 1) * 0.25;
 
-  // oscylatory
-  osc1 = audioCtx.createOscillator();
-  osc1.type = "sine";
-  osc1.frequency.value = 42;
-
-  osc2 = audioCtx.createOscillator();
-  osc2.type = "triangle";
-  osc2.frequency.value = 63;
-
-  // delikatny noise
-  const bufferSize = 2 * audioCtx.sampleRate;
-  const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-  const data = noiseBuffer.getChannelData(0);
-  for(let i=0;i<bufferSize;i++){
-    data[i] = (Math.random()*2 - 1) * 0.15;
-  }
-
-  const noiseSource = audioCtx.createBufferSource();
-  noiseSource.buffer = noiseBuffer;
-  noiseSource.loop = true;
+  const noise = audioCtx.createBufferSource();
+  noise.buffer = noiseBuf;
+  noise.loop = true;
 
   const noiseFilter = audioCtx.createBiquadFilter();
   noiseFilter.type = "lowpass";
-  noiseFilter.frequency.value = 280;
+  noiseFilter.frequency.value = 850;
+  noiseFilter.Q.value = 0.7;
 
-  // łączenia
-  osc1.connect(panner);
-  osc2.connect(panner);
-  noiseSource.connect(noiseFilter);
-  noiseFilter.connect(panner);
+  const noiseGain = audioCtx.createGain();
+  noiseGain.gain.value = 0.25;
 
-  panner.connect(masterGain);
-  masterGain.connect(audioCtx.destination);
+  noise.connect(noiseFilter);
+  noiseFilter.connect(noiseGain);
+  noiseGain.connect(masterGain);
+  noise.start();
 
-  osc1.start();
-  osc2.start();
-  noiseSource.start();
+  // low hum
+  const hum = audioCtx.createOscillator();
+  hum.type = "sine";
+  hum.frequency.value = 52;
 
-  // stereo drift (A)
-  setInterval(()=>{
-    if(!ambientOn) return;
-    const t = audioCtx.currentTime;
+  const humGain = audioCtx.createGain();
+  humGain.gain.value = 0.16;
 
-    // pływanie stereo
-    panner.pan.value = Math.sin(t * 0.20) * 0.38;
+  hum.connect(humGain);
+  humGain.connect(masterGain);
+  hum.start();
 
-    // mikro falowanie częstotliwości (życie)
-    osc1.frequency.linearRampToValueAtTime(40 + Math.random()*4, t + 2.5);
-    osc2.frequency.linearRampToValueAtTime(60 + Math.random()*5, t + 2.5);
+  // movement
+  const lfo = audioCtx.createOscillator();
+  lfo.type = "sine";
+  lfo.frequency.value = 0.07;
 
-  }, 60);
+  const lfoGain = audioCtx.createGain();
+  lfoGain.gain.value = 160;
+  lfo.connect(lfoGain);
+  lfoGain.connect(noiseFilter.frequency);
+  lfo.start();
 }
 
-function toggleAmbient(){
+async function unlockAudio({autoAmbient}){
   initAmbient();
-  ambientOn = !ambientOn;
+  if(!audioCtx){ unlockOverlay.style.display = "none"; return; }
 
-  const base = document.body.classList.contains("ritual") ? 0.022 : 0.030;
+  try{ if(audioCtx.state !== "running") await audioCtx.resume(); }catch(e){}
 
-  if(ambientOn){
-    masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
-    masterGain.gain.linearRampToValueAtTime(base, audioCtx.currentTime + 0.6);
-  }else{
-    masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
-    masterGain.gain.linearRampToValueAtTime(0.0, audioCtx.currentTime + 0.6);
+  // test beep
+  try{
+    const t = audioCtx.currentTime;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = "sine";
+    o.frequency.value = 220;
+    g.gain.value = 0.0001;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    g.gain.exponentialRampToValueAtTime(0.035, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
+    o.stop(t + 0.16);
+  }catch(e){}
+
+  unlocked = true;
+  setVoiceChip("Audio: unlocked (ctx=" + audioCtx.state + ")");
+  if(autoAmbient) setAmbient(true);
+  unlockOverlay.style.display = "none";
+}
+
+function setAmbient(on){
+  initAmbient();
+  if(!audioCtx || !masterGain){ setVoiceChip("Audio: brak ambient"); return; }
+
+  ambientOn = on;
+  const t = audioCtx.currentTime;
+  masterGain.gain.cancelScheduledValues(t);
+
+  const base = 0.060; // audible on phone
+  if(on){
+    masterGain.gain.linearRampToValueAtTime(base, t + 0.55);
+    setVoiceChip("🌌 Ambient: ON (ctx=" + audioCtx.state + ")");
+    ambientBtn.textContent = "🌌 Ambient: ON";
+  } else {
+    masterGain.gain.linearRampToValueAtTime(0.0, t + 0.35);
+    setVoiceChip("🌌 Ambient: OFF (ctx=" + audioCtx.state + ")");
+    ambientBtn.textContent = "🌌 Ambient";
   }
 }
 
-function stopAmbient(){
-  if(!audioCtx) return;
-  ambientOn = false;
-  masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
-  masterGain.gain.linearRampToValueAtTime(0.0, audioCtx.currentTime + 0.25);
+function stopAllAudio(){
+  try{ if(canSpeak) window.speechSynthesis.cancel(); }catch(e){}
+  try{ if(recognition && listening) recognition.stop(); }catch(e){}
+  try{ setAmbient(false); }catch(e){}
+  setVoiceChip("Audio: STOP");
 }
 
-function reactAmbient(){
-  if(!audioCtx || !ambientOn) return;
+function showUnlockOverlay(){ unlockOverlay.style.display = "flex"; }
 
-  const boost = document.body.classList.contains("ritual") ? 0.040 : 0.060;
-  const base  = document.body.classList.contains("ritual") ? 0.022 : 0.030;
-
-  masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
-  masterGain.gain.linearRampToValueAtTime(boost, audioCtx.currentTime + 0.25);
-  setTimeout(()=>{
-    masterGain.gain.linearRampToValueAtTime(base, audioCtx.currentTime + 0.8);
-  }, 450);
+function firstGestureUnlockHandler(){
+  if(unlocked) return;
+  unlockAudio({autoAmbient:true});
+  window.removeEventListener("pointerdown", firstGestureUnlockHandler, true);
+  window.removeEventListener("touchstart", firstGestureUnlockHandler, true);
+  window.removeEventListener("keydown", firstGestureUnlockHandler, true);
 }
 
-/* start orb */
-renderOrb();
+/* ============ STAN CORE (DEMO, hardcore tone) ============ */
+function stanDemo(text){
+  const t = (text || "").trim();
+  const opening =
+    "Dobra. Zatrzymajmy chaos na chwilę i złapmy fakty.\n" +
+    "Brakuje mi konkretów — więc dopytam. Nie będę wróżyć. Będę mierzyć.\n\n";
+
+  if(t.length < 40){
+    return {
+      analysis: opening +
+        "Masz za mało danych.\n\nPodaj 3 rzeczy:\n" +
+        "1) Cel (co ma być inne po tej decyzji?)\n" +
+        "2) Ograniczenia (czas/pieniądze/relacje/zdrowie)\n" +
+        "3) Stawka (co tracisz, jeśli zrobisz źle?)\n\n" +
+        "Jeśli nie dopiszesz — nie analizuję, bo to byłoby zgadywanie.",
+      risk: "Ryzyko: zgadywanie + emocje.\nOcena: wysokie.\nUtnij decyzje podejmowane „w szczycie”.",
+      recommendation:
+        "Plan na teraz:\n" +
+        "— Dopisz 3 punkty powyżej.\n" +
+        "— Potem ja zrobię: opcje A/B/C + konsekwencje.\n" +
+        "— Jeśli odmówisz konkretów: stop (to nie jest wróżenie)."
+    };
+  }
+
+  const hasTime = /(dziś|jutro|tydzień|miesiąc|do|deadline|data)/i.test(t);
+  const hasConstraints = /(nie mogę|muszę|budżet|czas|dziecko|praca|zdrow)/i.test(t);
+
+  let a = "🔎 ANALIZA\n\n" +
+    "Fakty > emocje.\n" +
+    "To, że coś boli, nie znaczy, że jest strategiczne.\n\n" +
+    "Sprawdź:\n" +
+    "— Co jest mierzalne?\n" +
+    "— Co jest tylko reakcją?\n\n";
+
+  a += hasConstraints
+    ? "Masz ograniczenia — dobrze. One wyznaczają realne opcje.\n"
+    : "Nie widzę ograniczeń. Bez tego plan będzie fikcją.\n";
+
+  a += hasTime
+    ? "Jest kontekst czasu. Da się zrobić plan.\n"
+    : "Nie podałaś horyzontu czasu. Decyzja bez czasu = rozmycie.\n";
+
+  const r = "⚠️ RYZYKO\n\n" +
+    "Ryzyko #1: decyzja w emocjach.\n" +
+    "Ryzyko #2: brak kryteriów (potem żal + chaos).\n\n" +
+    "Zasada: najpierw regulacja. Potem ruch.";
+
+  const rec = "🎯 REKOMENDACJA\n\n" +
+    "Plan 7 dni:\n" +
+    "— Zapisz 3 kryteria decyzji (co ma się poprawić?).\n" +
+    "— Zrób 1 mikro-test (mały ruch bez spalenia mostów).\n" +
+    "— Oceń wynik na skali 1–10.\n\n" +
+    "Plan 30 dni:\n" +
+    "— Wybierz kierunek i go dowieź.\n" +
+    "— Zablokuj powrót do punktu 0 (bez ruminacji).\n" +
+    "— Iteruj zamiast panikować.\n\n" +
+    "Chcesz: ja sam zaproponuję opcje A/B/C. Ale najpierw: kryteria.";
+
+  return {analysis:a, risk:r, recommendation:rec};
+}
+
+function run(){
+  const t = (input.value || "").trim();
+  const out = stanDemo(t);
+  analysis.textContent = out.analysis;
+  risk.textContent = out.risk;
+  recommendation.textContent = out.recommendation;
+  if(unlocked) speak(out.recommendation);
+}
+
+/* ============ EVENTS ============ */
+analyzeBtn.addEventListener("click", ()=>{
+  if(!unlocked) showUnlockOverlay();
+  run();
+});
+
+listenBtn.addEventListener("click", ()=>{
+  if(!canListen){
+    setVoiceChip("Mikrofon: BRAK (iOS PWA często blokuje)");
+    alert("iOS/PWA często nie wspiera rozpoznawania mowy w Safari. Fallback: wpisz tekst lub zrobimy nagranie i transkrypcję później.");
+    return;
+  }
+  try{ listening ? recognition.stop() : recognition.start(); }
+  catch(e){ setVoiceChip("Mikrofon: ERROR (start/stop)"); }
+});
+
+speakBtn.addEventListener("click", ()=>{
+  if(!unlocked) showUnlockOverlay();
+  const t = [analysis.textContent, risk.textContent, recommendation.textContent].join("\n\n");
+  speak(t);
+});
+
+ambientBtn.addEventListener("click", ()=>{
+  if(!unlocked){ showUnlockOverlay(); return; }
+  setAmbient(!ambientOn);
+});
+
+stopBtn.addEventListener("click", stopAllAudio);
+
+unlockBtn.addEventListener("click", ()=> unlockAudio({autoAmbient:true}));
+unlockNoAmbientBtn.addEventListener("click", ()=> unlockAudio({autoAmbient:false}));
+
+window.addEventListener("pointerdown", firstGestureUnlockHandler, true);
+window.addEventListener("touchstart", firstGestureUnlockHandler, true);
+window.addEventListener("keydown", firstGestureUnlockHandler, true);
+
+/* init */
+setPwaChip();
+renderAvatar();
+
+setTimeout(()=>{
+  if(!unlocked) showUnlockOverlay();
+  setVoiceChip("Audio: locked (tap to unlock)");
+}, 350);
 </script>
-
 </body>
 </html>
