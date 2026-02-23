@@ -1,544 +1,510 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>STAN</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>STAN</title>
 
-  <meta name="theme-color" content="#0B0F1A" />
-  <link rel="manifest" href="manifest.json" />
+<style>
+:root{
+  --bg:#070A12;
+  --bg2:#0B0F1A;
+  --text:#EAF0FF;
+  --muted:rgba(234,240,255,0.65);
+  --a1:#7B5CFF;
+  --a2:#B256FF;
 
-  <!-- iOS PWA -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="STAN">
-  <link rel="apple-touch-icon" href="icon-192.png.PNG" />
+  --orbGlow1: rgba(123,92,255,0.40);
+  --orbGlow2: rgba(178,86,255,0.35);
 
-  <style>
-    :root{
-      --bg:#070A12; --bg2:#0B0F1A;
-      --surface: rgba(255,255,255,0.06);
-      --stroke: rgba(255,255,255,0.10);
-      --text:#EAF0FF;
-      --muted: rgba(234,240,255,0.72);
-      --muted2: rgba(234,240,255,0.55);
-      --a1:#7B5CFF; --a2:#B256FF;
-      --good:#45D483; --warn:#F0C04A;
-      --r:22px;
-      --shadow: 0 18px 60px rgba(0,0,0,0.45);
-    }
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
-    body{
-      margin:0;
-      color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      background:
-        radial-gradient(1200px 700px at 65% 18%, rgba(178,86,255,0.22), transparent 55%),
-        radial-gradient(900px 520px at 22% 70%, rgba(123,92,255,0.18), transparent 55%),
-        linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
-      padding: 22px 16px 40px;
-      padding-top: max(22px, env(safe-area-inset-top));
-      padding-bottom: max(40px, env(safe-area-inset-bottom));
-    }
-    .wrap{ max-width:560px; margin:0 auto; }
-    .title{ font-size:56px; line-height:0.95; font-weight:900; letter-spacing:0.5px; }
-    .subtitle{ margin:8px 0 18px; color:var(--muted2); font-weight:700; }
+  --ritual: 0; /* 0/1 ustawiane JS-em */
+}
 
-    .hero{
-      border-radius: var(--r);
-      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
-      border: 1px solid var(--stroke);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      padding: 16px;
-    }
+*{box-sizing:border-box;}
+html,body{height:100%;}
 
-    .topRow{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      margin-bottom:10px;
-    }
-    .topLeft{
-      font-weight:900;
-      color: rgba(234,240,255,0.90);
-    }
-    .pill{
-      font-size:13px;
-      padding:8px 12px;
-      border-radius:999px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(0,0,0,0.18);
-      color: rgba(234,240,255,0.78);
-      backdrop-filter: blur(10px);
-      white-space:nowrap;
-    }
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto;
+  color:var(--text);
+  background:
+    radial-gradient(900px 600px at 70% 15%, rgba(178,86,255,0.18), transparent 60%),
+    linear-gradient(180deg,var(--bg),var(--bg2));
+  padding:22px 16px 40px;
+  transition: filter 400ms ease, background 400ms ease;
+}
 
-    .avatarBox{
-      width:100%;
-      aspect-ratio:1/1;
-      border-radius: calc(var(--r) - 6px);
-      border: 1px solid rgba(255,255,255,0.12);
-      background:
-        radial-gradient(650px 420px at 50% 40%, rgba(178,86,255,0.18), transparent 60%),
-        radial-gradient(800px 520px at 50% 110%, rgba(123,92,255,0.15), transparent 65%),
-        rgba(0,0,0,0.22);
-      position:relative;
-      overflow:hidden;
-      margin-bottom:14px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
+.wrap{max-width:560px;margin:auto;}
+.title{font-size:54px;font-weight:900;margin:0 0 4px;}
+.subtitle{color:var(--muted);margin:0 0 18px;}
 
-    /* ORB fallback (działa zawsze) */
-    .orbFallback{
-      width:72%;
-      aspect-ratio:1/1;
-      border-radius:999px;
-      background:
-        radial-gradient(circle at 35% 30%, rgba(255,255,255,0.35), transparent 24%),
-        radial-gradient(circle at 50% 55%, rgba(255,255,255,0.18), transparent 34%),
-        radial-gradient(circle at 50% 50%, rgba(178,86,255,0.75), rgba(123,92,255,0.45) 55%, rgba(0,0,0,0.35) 78%),
-        radial-gradient(circle at 50% 50%, rgba(0,0,0,0.35), rgba(0,0,0,0.60) 80%);
-      box-shadow:
-        0 0 80px rgba(123,92,255,0.35),
-        0 0 140px rgba(178,86,255,0.20),
-        inset 0 0 35px rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.12);
-      position:absolute;
-    }
-    .orbFallback::after{
-      content:"";
-      position:absolute;
-      left:-10%; right:-10%;
-      height:3px;
-      top:50%;
-      transform: translateY(-50%);
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.75), transparent);
-      box-shadow: 0 0 18px rgba(178,86,255,0.55);
-      opacity:0.9;
-    }
+/* ===== avatar box: bez ramek ===== */
+.avatarBox{
+  width:100%;
+  aspect-ratio:1/1;
+  border-radius:28px;
+  overflow:hidden;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:16px;
+  background: transparent;
+}
 
-    .avatarImg{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:none; /* pokażemy po load */
-    }
+/* ===== ORB ===== */
+.orb{
+  width:72%;
+  aspect-ratio:1/1;
+  border-radius:50%;
+  position:relative;
 
-    .hint{
-      position:absolute;
-      right:10px;
-      bottom:10px;
-      font-size:12px;
-      color: rgba(234,240,255,0.72);
-      background: rgba(0,0,0,0.25);
-      border: 1px solid rgba(255,255,255,0.12);
-      padding: 8px 10px;
-      border-radius: 999px;
-      backdrop-filter: blur(10px);
-    }
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255,255,255,0.18), transparent 45%),
+    radial-gradient(circle at 50% 55%, rgba(178,86,255,0.45), transparent 60%),
+    radial-gradient(circle at 50% 50%, rgba(123,92,255,0.75), #141422 70%, #000 100%);
 
-    textarea{
-      width:100%;
-      min-height:112px;
-      resize:vertical;
-      border-radius:18px;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.22);
-      color:var(--text);
-      padding:14px;
-      font-size:16px;
-      line-height:1.35;
-      outline:none;
-    }
-    textarea::placeholder{ color: rgba(234,240,255,0.45); }
+  box-shadow:
+    0 0 90px var(--orbGlow1),
+    0 0 160px var(--orbGlow2);
 
-    .btn{
-      width:100%;
-      margin-top:12px;
-      border:none;
-      border-radius:18px;
-      padding:16px 18px;
-      font-size:20px;
-      font-weight:900;
-      color:#fff;
-      background: linear-gradient(90deg, var(--a1), var(--a2));
-      box-shadow: 0 18px 50px rgba(123,92,255,0.25);
-      cursor:pointer;
-      user-select:none;
-    }
-    .btn:active{ transform: translateY(1px); }
+  animation: orbBreath 6s ease-in-out infinite;
+  transition: transform .25s ease, box-shadow .25s ease, filter .25s ease;
+}
 
-    .row{
-      display:flex;
-      gap:10px;
-      margin-top:10px;
-    }
-    .smallBtn{
-      flex:1;
-      border-radius:16px;
-      padding:12px 14px;
-      background: rgba(0,0,0,0.18);
-      border: 1px solid rgba(255,255,255,0.10);
-      color: rgba(234,240,255,0.85);
-      font-weight:900;
-      cursor:pointer;
-    }
-    .smallBtn.primary{
-      background: linear-gradient(90deg, rgba(123,92,255,0.30), rgba(178,86,255,0.30));
-      border-color: rgba(255,255,255,0.14);
-    }
+@keyframes orbBreath{
+  0%{transform:scale(1);}
+  50%{transform:scale(1.06);}
+  100%{transform:scale(1);}
+}
 
-    .chips{
-      margin-top:12px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-    .chip{
-      font-size:13px;
-      color: rgba(234,240,255,0.78);
-      padding:9px 12px;
-      border-radius:999px;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.16);
-      backdrop-filter: blur(10px);
-    }
-    .chip.good{ border-color: rgba(69,212,131,0.35); }
-    .chip.warn{ border-color: rgba(240,192,74,0.35); }
+.orb:after{
+  content:"";
+  position:absolute;
+  left:-10%;
+  right:-10%;
+  height:2px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.8),transparent);
+  animation: scan 5s linear infinite;
+  opacity:0.6;
+}
+@keyframes scan{
+  0%{top:15%;}
+  50%{top:85%;}
+  100%{top:15%;}
+}
 
-    .grid{
-      margin-top:16px;
-      display:grid;
-      gap:12px;
-    }
-    .card{
-      border-radius:20px;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(255,255,255,0.05);
-      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
-      padding:16px;
-    }
-    .card h3{
-      margin:0 0 8px;
-      font-size:34px;
-      font-weight:900;
-      letter-spacing:0.2px;
-    }
-    .card .text{
-      margin:0;
-      color: rgba(234,240,255,0.74);
-      font-size:16px;
-      line-height:1.42;
-      white-space: pre-wrap;
-    }
-  </style>
+/* ===== SEMI ===== */
+.semi{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center 20%;
+  animation:breathe 8s ease-in-out infinite;
+  transform: scale(1.03);
+  filter: saturate(1.05) contrast(1.02);
+  will-change: transform;
+}
+
+@keyframes breathe{
+  0%{transform:scale(1.03);}
+  50%{transform:scale(1.06);}
+  100%{transform:scale(1.03);}
+}
+
+/* overlay “presence” – delikatny glow bez ramek */
+.presenceGlow{
+  position:absolute;
+  inset:-15%;
+  background:
+    radial-gradient(closest-side at 50% 45%, rgba(123,92,255,0.18), transparent 62%),
+    radial-gradient(closest-side at 55% 55%, rgba(178,86,255,0.12), transparent 66%);
+  filter: blur(18px);
+  opacity: 0.75;
+  pointer-events:none;
+  mix-blend-mode: screen;
+}
+
+/* oczy */
+.eyes{
+  position:absolute;
+  top:42%;
+  left:50%;
+  transform:translateX(-50%);
+  width:120px;
+  display:flex;
+  justify-content:space-between;
+  pointer-events:none;
+}
+
+.eye{
+  width:14px;height:14px;border-radius:50%;
+  background:#4de0ff;
+  box-shadow:0 0 12px #4de0ff;
+  animation: blink 14s infinite;
+  transition: transform 180ms ease;
+}
+@keyframes blink{
+  0%,97%,100%{transform:scaleY(1);}
+  98%{transform:scaleY(0.1);}
+}
+
+/* ===== inputs ===== */
+textarea{
+  width:100%;
+  min-height:110px;
+  border-radius:18px;
+  border:none;
+  background:rgba(0,0,0,0.25);
+  color:white;
+  padding:14px;
+  font-size:16px;
+  margin-bottom:12px;
+  outline:none;
+}
+
+button{
+  width:100%;
+  padding:16px;
+  border:none;
+  border-radius:18px;
+  font-size:18px;
+  font-weight:800;
+  color:white;
+  background:linear-gradient(90deg,var(--a1),var(--a2));
+  cursor:pointer;
+  margin-bottom:10px;
+}
+
+.row{
+  display:flex;
+  gap:10px;
+}
+.row button{
+  flex:1;
+  background:rgba(255,255,255,0.07);
+  border:1px solid rgba(255,255,255,0.10);
+  margin-bottom:0;
+}
+.row button.primary{
+  background:linear-gradient(90deg,var(--a1),var(--a2));
+  border:none;
+}
+
+.card{
+  margin-top:14px;
+  padding:14px;
+  border-radius:18px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.08);
+}
+
+h3{margin:0 0 6px 0;}
+.text{white-space:pre-wrap;color:var(--muted);margin:0;}
+
+/* ===== Ritual Dark (auto po 22) ===== */
+body.ritual{
+  filter: saturate(0.95) brightness(0.92) contrast(1.05);
+}
+body.ritual .subtitle{ color: rgba(234,240,255,0.55); }
+body.ritual .orb{
+  animation-duration: 8s;
+  filter: saturate(0.9) brightness(0.95);
+  box-shadow:
+    0 0 70px rgba(90,70,160,0.35),
+    0 0 120px rgba(120,60,160,0.22);
+}
+body.ritual .presenceGlow{
+  opacity: 0.55;
+}
+</style>
 </head>
 
 <body>
-  <div class="wrap">
-    <div class="title">STAN</div>
-    <div class="subtitle">Agent decyzyjny AI</div>
+<div class="wrap">
+  <div class="title">STAN</div>
+  <div class="subtitle">Agent decyzyjny AI • obecność</div>
 
-    <div class="hero">
-      <div class="topRow">
-        <div class="topLeft" id="avatarLabel">STAN avatar</div>
-        <div class="pill" id="avatarPill">Domyślnie: ORB</div>
-      </div>
-
-      <div class="avatarBox" id="avatarBox" aria-label="STAN avatar">
-        <!-- fallback zawsze działa -->
-        <div class="orbFallback" id="orbFallback" aria-hidden="true"></div>
-
-        <!-- obrazek avatara (pokaże się jeśli plik istnieje i się załaduje) -->
-        <img id="avatarImg" class="avatarImg" alt="STAN orb" src="avatar%20orb.PNG" />
-
-        <div class="hint">Przytrzymaj 1s: przełącz avatar</div>
-      </div>
-
-      <textarea id="input" placeholder="Opisz sytuację. Co się stało, co chcesz osiągnąć, jakie masz ograniczenia?"></textarea>
-      <button class="btn" id="analyzeBtn">Analiza →</button>
-
-      <div class="row">
-        <button class="smallBtn primary" id="listenBtn">🎙️ Słuchaj</button>
-        <button class="smallBtn" id="speakBtn">🔊 Czytaj</button>
-        <button class="smallBtn" id="stopBtn">⏹ Stop</button>
-      </div>
-
-      <div class="chips">
-        <div class="chip warn" id="modeChip">Tryb: DEMO (bez API)</div>
-        <div class="chip good" id="pwaChip">PWA: ...</div>
-        <div class="chip" id="voiceChip">Głos: ...</div>
-        <div class="chip" id="verChip">Wersja: 20260223-FULL</div>
-      </div>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <h3>Analiza</h3>
-        <p class="text" id="analysis">Tu pojawi się analiza.</p>
-      </div>
-
-      <div class="card">
-        <h3>Ryzyko</h3>
-        <p class="text" id="risk">Tu pojawi się ocena ryzyka.</p>
-      </div>
-
-      <div class="card">
-        <h3>Rekomendacja</h3>
-        <p class="text" id="recommendation">Tu pojawi się rekomendacja.</p>
-      </div>
-    </div>
+  <div class="avatarBox" id="avatarBox" aria-label="STAN avatar">
+    <div class="orb" id="orb"></div>
   </div>
+
+  <textarea id="input" placeholder="Opisz sytuację..."></textarea>
+
+  <button class="primary" onclick="run()">Analiza →</button>
+
+  <div class="row">
+    <button onclick="toggleAvatar()">👁 Avatar</button>
+    <button onclick="toggleAmbient()">🌌 Ambient</button>
+    <button onclick="stopAmbient()">⏹ Stop</button>
+  </div>
+
+  <div class="card">
+    <h3>Analiza</h3>
+    <p class="text" id="analysis">—</p>
+  </div>
+
+  <div class="card">
+    <h3>Ryzyko</h3>
+    <p class="text" id="risk">—</p>
+  </div>
+
+  <div class="card">
+    <h3>Rekomendacja</h3>
+    <p class="text" id="rec">—</p>
+  </div>
+</div>
 
 <script>
 /* =========================
-   PWA detect
+   Ritual Dark auto po 22:00
 ========================= */
-function isStandalonePWA(){
-  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+function applyRitualByTime(){
+  const hour = new Date().getHours();
+  // Ritual od 22 do 5:59
+  const ritual = (hour >= 22 || hour < 6);
+  document.body.classList.toggle("ritual", ritual);
 }
-function setPwaChip(){
-  document.getElementById("pwaChip").textContent = "PWA: " + (isStandalonePWA() ? "TAK" : "NIE");
-}
+applyRitualByTime();
+setInterval(applyRitualByTime, 60 * 1000);
 
 /* =========================
-   Voice: Speech Synthesis (mówienie)
+   Avatar switch: orb <-> semi
+   Semi plik: avatar-semi.png
 ========================= */
-const canSpeak = ("speechSynthesis" in window);
-function speak(text){
-  if(!canSpeak) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(String(text || ""));
-  u.lang = "pl-PL";
-  u.rate = 1.03;
-  u.pitch = 0.95;
-  window.speechSynthesis.speak(u);
-}
-function stopAllAudio(){
-  if(canSpeak) window.speechSynthesis.cancel();
-  if(recognition){
-    try{ recognition.stop(); }catch(e){}
-  }
-}
-
-/* =========================
-   Voice: Speech Recognition (słuchanie)
-   UWAGA: iOS PWA często nie wspiera.
-========================= */
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
-const canListen = !!SpeechRecognition;
-let recognition = null;
-let listening = false;
-
-if(canListen){
-  recognition = new SpeechRecognition();
-  recognition.lang = "pl-PL";
-  recognition.interimResults = false;
-  recognition.continuous = false;
-
-  recognition.onresult = (e)=>{
-    const text = Array.from(e.results).map(r => r[0].transcript).join(" ").trim();
-    if(text){
-      input.value = text;
-      run(); // auto-analiza po dyktowaniu
-    }
-  };
-  recognition.onend = ()=>{ listening = false; };
-}
-
-/* =========================
-   Avatar: ORB + SEMI (twoje pliki PNG)
-========================= */
-const avatarImg = document.getElementById("avatarImg");
-const orbFallback = document.getElementById("orbFallback");
-const avatarPill = document.getElementById("avatarPill");
-
-function setPill(mode){
-  avatarPill.textContent = (mode === "semi") ? "Premium: SEMI-HUMAN" : "Domyślnie: ORB";
-}
-
-avatarImg.addEventListener("load", ()=>{
-  avatarImg.style.display = "block";
-  orbFallback.style.display = "none";
-});
-avatarImg.addEventListener("error", ()=>{
-  // jeśli obrazek nie istnieje / zła nazwa -> pokaz fallback orb
-  avatarImg.style.display = "none";
-  orbFallback.style.display = "block";
-});
-
-function setAvatarMode(mode){
-  localStorage.setItem("stanAvatarMode", mode);
-  setPill(mode);
-
-  if(mode === "semi"){
-    avatarImg.src = "avatar-semi.PNG";
-    avatarImg.alt = "STAN semi-human";
-  } else {
-    avatarImg.src = "avatar%20orb.PNG";
-    avatarImg.alt = "STAN orb";
-  }
-}
-
+let mode = "orb";
 const avatarBox = document.getElementById("avatarBox");
-let pressTimer = null;
+
+function renderOrb(){
+  avatarBox.innerHTML = `<div class="orb" id="orb"></div>`;
+  mode = "orb";
+}
+
+function renderSemi(){
+  avatarBox.innerHTML = `
+    <img src="avatar-semi.png" class="semi" id="semi">
+    <div class="presenceGlow"></div>
+    <div class="eyes" id="eyes">
+      <div class="eye"></div>
+      <div class="eye"></div>
+    </div>
+  `;
+  mode = "semi";
+  // po renderze odpal tracking spojrzenia
+  setupGazeTracking();
+}
 
 function toggleAvatar(){
-  const cur = localStorage.getItem("stanAvatarMode") || "orb";
-  setAvatarMode(cur === "orb" ? "semi" : "orb");
+  if(mode === "orb") renderSemi();
+  else renderOrb();
 }
-
-avatarBox.addEventListener("touchstart", ()=>{
-  pressTimer = setTimeout(toggleAvatar, 900);
-}, {passive:true});
-avatarBox.addEventListener("touchend", ()=>{ if(pressTimer) clearTimeout(pressTimer); });
-
-avatarBox.addEventListener("mousedown", ()=>{
-  pressTimer = setTimeout(toggleAvatar, 900);
-});
-avatarBox.addEventListener("mouseup", ()=>{ if(pressTimer) clearTimeout(pressTimer); });
-
-/* start */
-setAvatarMode(localStorage.getItem("stanAvatarMode") || "orb");
 
 /* =========================
-   STAN CORE (DEMO, bez API)
-   Styl: pomocny, twardy, konkretny.
+   Semi patrzy za kursorem/palcem
 ========================= */
-const analyzeBtn = document.getElementById("analyzeBtn");
-const input = document.getElementById("input");
-const analysis = document.getElementById("analysis");
-const risk = document.getElementById("risk");
-const recommendation = document.getElementById("recommendation");
+let gazeSetupDone = false;
 
-function normalize(t){
-  return (t || "").replace(/\s+/g, " ").trim();
-}
+function setupGazeTracking(){
+  // nie rejestruj 100x listenerów
+  if(gazeSetupDone) return;
+  gazeSetupDone = true;
 
-function stanDemo(raw){
-  const text = normalize(raw);
-  const tooShort = text.length < 40;
+  function updateGaze(clientX, clientY){
+    if(mode !== "semi") return;
+    const eyesWrap = document.getElementById("eyes");
+    if(!eyesWrap) return;
 
-  const opening =
-    "Dobra. Zatrzymujemy chaos na chwilę i łapiemy fakty.\n" +
-    "Nie będę miły/a. Będę użyteczny/a.\n";
+    const rect = avatarBox.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
 
-  if(tooShort){
-    return {
-      analysis:
-        opening +
-        "\nMasz za mało danych.\n" +
-        "Wklej 3 rzeczy (krótko):\n" +
-        "1) CEL (co ma być inaczej?)\n" +
-        "2) OGRANICZENIA (czas/pieniądze/zdrowie/ryzyko)\n" +
-        "3) TERMIN (kiedy decyzja?)\n" +
-        "\nBez tego będziemy zgadywać — a ja nie zgaduję.",
-      risk:
-        "Ryzyko: błąd decyzji przez emocje + braki danych — WYSOKIE.",
-      recommendation:
-        "Zrób teraz mikro-porządek:\n" +
-        "• 1 zdanie: cel\n" +
-        "• 1 zdanie: ograniczenia\n" +
-        "• 1 zdanie: termin\n" +
-        "Potem wracamy i robię plan 7/30 dni."
-    };
+    const dx = (clientX - cx) / rect.width;
+    const dy = (clientY - cy) / rect.height;
+
+    const max = 6; // px
+    const x = Math.max(-1, Math.min(1, dx)) * max;
+    const y = Math.max(-1, Math.min(1, dy)) * max;
+
+    const eyes = avatarBox.querySelectorAll(".eye");
+    eyes.forEach(e => {
+      e.style.transform = `translate(${x}px, ${y}px)`;
+    });
   }
 
-  // STAN sam proponuje A/B
-  const A =
-    "OPCJA A (konserwatywna): minimalny ruch + test w małej skali.\n" +
-    "Cel: zebrać dane i obniżyć ryzyko.";
-  const B =
-    "OPCJA B (odważna): decyzja teraz + konsekwentne cięcie rozproszeń.\n" +
-    "Cel: tempo, nawet jeśli boli.";
-
-  const analysisTxt =
-    "🔎 ANALIZA\n\n" +
-    "Fakty > emocje.\n" +
-    "To, że coś boli, nie znaczy, że to dobra decyzja.\n\n" +
-    "Najpierw oddziel:\n" +
-    "• co jest faktem\n" +
-    "• co jest interpretacją\n" +
-    "• co jest reakcją\n\n" +
-    "Proponuję dwie ścieżki:\n\n" +
-    A + "\n\n" + B + "\n\n" +
-    "Teraz: wybór A czy B?\n" +
-    "Jeśli nie umiesz wybrać — podaj 3 kryteria (np. spokój/kasa/rozwój), a wybiorę za Ciebie.";
-
-  const riskTxt =
-    "⚠️ RYZYKO\n\n" +
-    "1) Impuls w emocjach → szkoda.\n" +
-    "2) Brak kryteriów → pętla.\n\n" +
-    "Ocena: ŚREDNIO-WYSOKIE bez kryteriów.";
-
-  const plan7 =
-    "⏱ PLAN 7 DNI\n" +
-    "1) Dziś: spisz 3 kryteria decyzji.\n" +
-    "2) Oceń A i B (1–10) dla każdego kryterium.\n" +
-    "3) Zrób 1 mikro-test (30–60 min), który sprawdza A albo B.\n" +
-    "4) Zapisz wniosek w 3 zdaniach: działa / nie działa / następny krok.";
-
-  const plan30 =
-    "🚀 PLAN 30 DNI\n" +
-    "1) Wybierz A/B i zablokuj powrót do chaosu (1 konkretna blokada).\n" +
-    "2) Rytm: 3 sesje/tydzień po 45 min.\n" +
-    "3) Co tydzień jedna korekta — bez dramatów.\n\n" +
-    "Decyzja nie musi być idealna. Musi być świadoma.";
-
-  return {
-    analysis: opening + "\n" + analysisTxt,
-    risk: riskTxt,
-    recommendation: plan7 + "\n\n" + plan30
-  };
+  window.addEventListener("mousemove", (e)=> updateGaze(e.clientX, e.clientY), {passive:true});
+  window.addEventListener("touchmove", (e)=>{
+    if(!e.touches || !e.touches[0]) return;
+    updateGaze(e.touches[0].clientX, e.touches[0].clientY);
+  }, {passive:true});
 }
 
+/* =========================
+   Scroll: subtelny drift
+========================= */
+window.addEventListener("scroll", ()=>{
+  const y = window.scrollY * 0.01;
+  const orb = document.querySelector(".orb");
+  const semi = document.getElementById("semi");
+
+  if(orb){
+    orb.style.transform = `translateY(${y}px) scale(1.03)`;
+  }
+  if(semi){
+    semi.style.transform = `translateY(${y}px) scale(1.04)`;
+  }
+}, {passive:true});
+
+/* =========================
+   Tryb skupienia przy analizie
+========================= */
+function focusMode(){
+  document.body.style.filter = "brightness(0.93)";
+  setTimeout(()=>{ document.body.style.filter = ""; }, 900);
+}
+
+/* =========================
+   STAN DEMO (bez API)
+========================= */
 function run(){
-  const out = stanDemo(input.value || "");
-  analysis.textContent = out.analysis || "";
-  risk.textContent = out.risk || "";
-  recommendation.textContent = out.recommendation || "";
-  speak(out.recommendation || ""); // auto-mówienie rekomendacji
+  const t = (document.getElementById("input").value || "").trim();
+
+  if(t.length < 40){
+    document.getElementById("analysis").textContent =
+      "Za mało danych. Podaj: cel + ograniczenia + 2 opcje (A/B).";
+    document.getElementById("risk").textContent =
+      "Ryzyko: zgadywanie. A ja nie zgaduję.";
+    document.getElementById("rec").textContent =
+      "Dopisz 3 krótkie zdania i kliknij Analiza jeszcze raz.";
+    reactAmbient();
+    return;
+  }
+
+  focusMode();
+
+  document.getElementById("analysis").textContent =
+    "Oddziel fakty od emocji. Teraz potrzebuję kryteriów wyboru.";
+  document.getElementById("risk").textContent =
+    "Największe ryzyko: decyzja pod wpływem impulsu lub bez kryteriów.";
+  document.getElementById("rec").textContent =
+    "Plan: 3 kryteria → ocena A/B (1–10) → 1 mikro-test → decyzja w 7 dni.";
+
+  reactAmbient();
 }
 
-/* Events */
-analyzeBtn.addEventListener("click", run);
+/* =========================
+   Ambient: WebAudio (stereo pływanie)
+   100% bezkosztowo
+========================= */
+let audioCtx = null;
+let masterGain = null;
+let panner = null;
+let osc1 = null;
+let osc2 = null;
+let noiseNode = null;
+let ambientOn = false;
 
-document.getElementById("listenBtn").addEventListener("click", ()=>{
-  if(!canListen){
-    document.getElementById("voiceChip").textContent =
-      "Głos: słuchanie — BRAK (iOS PWA często blokuje)";
-    alert("Słuchanie (SpeechRecognition) nie jest dostępne w tej przeglądarce/PWA. Mówienie (🔊) powinno działać.");
-    return;
+function initAmbient(){
+  if(audioCtx) return;
+
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.00; // start od zera
+
+  // stereo panner
+  panner = audioCtx.createStereoPanner();
+  panner.pan.value = 0;
+
+  // oscylatory
+  osc1 = audioCtx.createOscillator();
+  osc1.type = "sine";
+  osc1.frequency.value = 42;
+
+  osc2 = audioCtx.createOscillator();
+  osc2.type = "triangle";
+  osc2.frequency.value = 63;
+
+  // delikatny noise
+  const bufferSize = 2 * audioCtx.sampleRate;
+  const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = noiseBuffer.getChannelData(0);
+  for(let i=0;i<bufferSize;i++){
+    data[i] = (Math.random()*2 - 1) * 0.15;
   }
-  if(listening){
-    try{ recognition.stop(); }catch(e){}
-    listening = false;
-    return;
+
+  const noiseSource = audioCtx.createBufferSource();
+  noiseSource.buffer = noiseBuffer;
+  noiseSource.loop = true;
+
+  const noiseFilter = audioCtx.createBiquadFilter();
+  noiseFilter.type = "lowpass";
+  noiseFilter.frequency.value = 280;
+
+  // łączenia
+  osc1.connect(panner);
+  osc2.connect(panner);
+  noiseSource.connect(noiseFilter);
+  noiseFilter.connect(panner);
+
+  panner.connect(masterGain);
+  masterGain.connect(audioCtx.destination);
+
+  osc1.start();
+  osc2.start();
+  noiseSource.start();
+
+  // stereo drift (A)
+  setInterval(()=>{
+    if(!ambientOn) return;
+    const t = audioCtx.currentTime;
+
+    // pływanie stereo
+    panner.pan.value = Math.sin(t * 0.20) * 0.38;
+
+    // mikro falowanie częstotliwości (życie)
+    osc1.frequency.linearRampToValueAtTime(40 + Math.random()*4, t + 2.5);
+    osc2.frequency.linearRampToValueAtTime(60 + Math.random()*5, t + 2.5);
+
+  }, 60);
+}
+
+function toggleAmbient(){
+  initAmbient();
+  ambientOn = !ambientOn;
+
+  const base = document.body.classList.contains("ritual") ? 0.022 : 0.030;
+
+  if(ambientOn){
+    masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+    masterGain.gain.linearRampToValueAtTime(base, audioCtx.currentTime + 0.6);
+  }else{
+    masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+    masterGain.gain.linearRampToValueAtTime(0.0, audioCtx.currentTime + 0.6);
   }
-  try{
-    recognition.start();
-    listening = true;
-  }catch(e){
-    alert("Nie mogę uruchomić słuchania. Spróbuj w Safari/Chrome i daj dostęp do mikrofonu.");
-  }
-});
+}
 
-document.getElementById("speakBtn").addEventListener("click", ()=>{
-  speak([analysis.textContent, risk.textContent, recommendation.textContent].join("\n\n"));
-});
+function stopAmbient(){
+  if(!audioCtx) return;
+  ambientOn = false;
+  masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+  masterGain.gain.linearRampToValueAtTime(0.0, audioCtx.currentTime + 0.25);
+}
 
-document.getElementById("stopBtn").addEventListener("click", stopAllAudio);
+function reactAmbient(){
+  if(!audioCtx || !ambientOn) return;
 
-/* Init */
-setPwaChip();
-document.getElementById("voiceChip").textContent =
-  "Głos: " + (canListen ? "słuchanie + mówienie" : "mówienie (słuchanie brak)");
+  const boost = document.body.classList.contains("ritual") ? 0.040 : 0.060;
+  const base  = document.body.classList.contains("ritual") ? 0.022 : 0.030;
+
+  masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+  masterGain.gain.linearRampToValueAtTime(boost, audioCtx.currentTime + 0.25);
+  setTimeout(()=>{
+    masterGain.gain.linearRampToValueAtTime(base, audioCtx.currentTime + 0.8);
+  }, 450);
+}
+
+/* start orb */
+renderOrb();
 </script>
+
 </body>
 </html>
