@@ -213,225 +213,97 @@
   </div>
 
 <script>
-  // ===== PWA detect =====
-  function isStandalonePWA(){
-    return window.matchMedia("(display-mode: standalone)").matches
-        || window.navigator.standalone === true;
-  }
-  function setPwaChip(){
-    document.getElementById("pwaChip").textContent = "PWA: " + (isStandalonePWA() ? "TAK" : "NIE");
-  }
+<script>
 
-  // ===== Voice: Speech Synthesis (mówienie) =====
-  const canSpeak = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
-  let speakingUtterance = null;
+// =====================
+// STAN CORE
+// =====================
 
-  function speak(text){
-    if(!canSpeak){
-      document.getElementById("voiceChip").textContent = "Głos: mówienie – BRAK";
-      return;
-    }
-    window.speechSynthesis.cancel();
+const analyzeBtn = document.getElementById("analyzeBtn");
+const input = document.getElementById("input");
+const analysis = document.getElementById("analysis");
+const risk = document.getElementById("risk");
+const recommendation = document.getElementById("recommendation");
 
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = "pl-PL";
-    u.rate = 1.03;   // minimalnie szybciej
-    u.pitch = 0.95;  // minimalnie niżej
-    speakingUtterance = u;
+// =====================
+// MOWIENIE
+// =====================
 
-    window.speechSynthesis.speak(u);
-  }
+function speak(text){
+if(!window.speechSynthesis) return;
+speechSynthesis.cancel();
+let u = new SpeechSynthesisUtterance(text);
+u.lang = "pl-PL";
+u.rate = 1;
+u.pitch = 1;
+speechSynthesis.speak(u);
+}
 
-  function stopAllAudio(){
-    if(canSpeak) window.speechSynthesis.cancel();
-    if(recognition) { try { recognition.stop(); } catch(e){} }
-  }
+// =====================
+// GLOWNY PROMPT
+// =====================
 
-  // ===== Voice: Speech Recognition (słuchanie) =====
-  // Na iOS bywa niedostępne. Gdy brak – pokażemy komunikat.
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const canListen = !!SR;
-  let recognition = null;
-  let listening = false;
+function run(){
 
-  if(canListen){
-    recognition = new SR();
-    recognition.lang = "pl-PL";
-    recognition.continuous = false;
-    recognition.interimResults = true;
+let t = input.value.trim();
 
-    recognition.onstart = () => {
-      listening = true;
-      document.getElementById("voiceChip").textContent = "Głos: słucham…";
-    };
+if(t.length < 40){
+analysis.textContent =
+"Zatrzymaj chaos.\n\n" +
+"Podaj:\n" +
+"1) Cel\n" +
+"2) Ograniczenia\n" +
+"3) Opcje (A/B)\n\n" +
+"Nie zgaduję. Analizuję.";
 
-    recognition.onresult = (event) => {
-      let finalText = "";
-      let interim = "";
-      for (let i = event.resultIndex; i < event.results.length; i++){
-        const txt = event.results[i][0].transcript;
-        if(event.results[i].isFinal) finalText += txt;
-        else interim += txt;
-      }
-      const box = document.getElementById("input");
-      if(finalText) box.value = (box.value ? box.value + " " : "") + finalText.trim();
-      else if(interim) {
-        // delikatny podgląd: dopisujemy w placeholder? (nie ruszamy tekstu)
-      }
-    };
+risk.textContent = "";
+recommendation.textContent = "";
+return;
+}
 
-    recognition.onerror = () => {
-      document.getElementById("voiceChip").textContent = "Głos: słuchanie – błąd/blocked";
-      listening = false;
-    };
+// ANALIZA
 
-    recognition.onend = () => {
-      listening = false;
-      document.getElementById("voiceChip").textContent = "Głos: gotowe";
-    };
-  }
+analysis.textContent =
+"🔎 ANALIZA\n\n" +
+"Oddziel fakty od emocji.\n" +
+"To, że coś boli, nie znaczy, że jest strategicznie złe.\n\n" +
+"Sprawdź:\n" +
+"- Co jest mierzalne?\n" +
+"- Co jest tylko reakcją?"
 
-  // ===== STAN DEMO „inteligencja” =====
-  function normalize(s){ return (s || "").toString().trim(); }
 
-  function detectTopic(text){
-    const t = text.toLowerCase();
-    const rel = ["partner","związek","relacja","rozst","kłótn","zdrad","obraża","ucieka"];
-    const work = ["praca","szef","firma","projekt","biznes","zarab","etat","klient"];
-    const money = ["kasa","pieniądz","kredyt","rata","czynsz","dług","budżet","oszcz"];
-    const health = ["zdrow","sen","lęk","panik","depres","psych","ból","terapi"];
-    const score = (arr)=>arr.reduce((a,w)=>a+(t.includes(w)?1:0),0);
-    const m = {rel:score(rel), work:score(work), money:score(money), health:score(health)};
-    let top="ogólne", best=0;
-    for (const k in m){ if(m[k]>best){best=m[k]; top=k;} }
-    return top;
-  }
+// RYZYKO
 
-  function extractConstraints(text){
-    const t=text.toLowerCase();
-    const hits=[];
-    if (t.match(/\b(7 dni|tydzień|30 dni|miesiąc|jutro|dziś|deadline)\b/)) hits.push("czas");
-    if (t.match(/\b(pieniądz|kasa|budżet|kredyt|rata|czynsz|brak dochodu|oszczęd)\b/)) hits.push("pieniądze");
-    if (t.match(/\b(zdrow|sen|lęk|atak paniki|terapi|lekarz)\b/)) hits.push("zdrowie");
-    return [...new Set(hits)];
-  }
+risk.textContent =
+"⚠ RYZYKO\n\n" +
+"Jeśli decyzja zapada w szczycie emocji — rośnie ryzyko błędu.\n" +
+"Najpierw regulacja. Potem ruch."
 
-  function proposeOptions(topic){
-    if (topic==="rel") return [
-      "A) Rozmowa z ramą + granica: 1 temat, 1 prośba, 1 konsekwencja.",
-      "B) Reset: pauza 48h + spis faktów + rozmowa w neutralnym miejscu."
-    ];
-    if (topic==="work") return [
-      "A) Bezpieczny marsz: zostajesz w pracy i robisz MVP z limitem czasu.",
-      "B) Skok kontrolowany: runway 3–6 mies. → dopiero redukcja etatu/zmiana."
-    ];
-    if (topic==="money") return [
-      "A) Stabilizacja: tniesz koszty stałe, porządkujesz przepływy.",
-      "B) Ofensywa: zwiększasz przychód + plan spłat z terminami."
-    ];
-    if (topic==="health") return [
-      "A) Ulga 7 dni: sen + rutyna + redukcja bodźców.",
-      "B) Plan 30 dni: konsultacja + system (sen/ruch/wsparcie)."
-    ];
-    return [
-      "A) Wariant bezpieczny: małe kroki + test faktów.",
-      "B) Wariant ofensywny: szybciej, ale z barierkami (limity/konsekwencje)."
-    ];
-  }
+// REKOMENDACJA
 
-  function stanDemo(text){
-    const topic = detectTopic(text);
-    const constraints = extractConstraints(text);
+recommendation.textContent =
+"🧭 PLAN 7 DNI\n" +
+"- Spisz kryteria decyzji\n" +
+"- Oceń opcję A i B (1–10)\n" +
+"- Wykonaj jeden mikro-test\n\n" +
+"🚀 PLAN 30 DNI\n" +
+"- Wybierz\n" +
+"- Zablokuj powrót do punktu 0\n" +
+"- Iteruj zamiast panikować\n\n" +
+"Decyzja nie musi być idealna.\n" +
+"Musi być świadoma.";
 
-    const opening = [
-      "Dobra. Zatrzymajmy chaos na chwilę i złapmy fakty.",
-      "Nie będę miła. Będę pomocna.",
-      "Plan po konkretach albo odmowa."
-    ].join(" ");
+speak(recommendation.textContent);
 
-    const missing=[];
-    if (text.length < 35) missing.push("opis jest za krótki");
-    if (constraints.length === 0) missing.push("brak twardych ograniczeń (czas/pieniądze/zdrowie)");
-    const needsClarify = missing.length>0;
+}
 
-    const opt = proposeOptions(topic);
+// =====================
+// EVENT
+// =====================
 
-    if (needsClarify){
-      return {
-        analysis:
-          opening + "\n\n" +
-          "Widzę kierunek, ale brakuje danych: " + missing.join(", ") + ".\n" +
-          "Temat: " + (topic==="rel"?"relacja":topic==="work"?"praca/projekt":topic==="money"?"finanse":topic==="health"?"zdrowie":"decyzja ogólna") + ".",
-        risk:
-          "Ryzyko: decyzja w emocjach + interpretacja bez ram.\n" +
-          "Ocena: średnie–wysokie dopóki nie doprecyzujesz faktów.",
-        recommendation:
-          "Odpowiedz krótko:\n" +
-          "1) Twarde ograniczenia (czas/kasa/zdrowie) – 1 linia.\n" +
-          "2) Cel na 30 dni – 1 zdanie.\n\n" +
-          "Proponowane opcje (do potwierdzenia):\n" +
-          opt.map(x=>"• "+x).join("\n")
-      };
-    }
+analyzeBtn.addEventListener("click", run);
 
-    return {
-      analysis:
-        opening + "\n\n" +
-        "Ograniczenia wykryte: " + constraints.join(", ") + ".\n" +
-        "Masz napięcie między bezpieczeństwem a zmianą. Normalne.\n" +
-        "Twoim problemem nie jest lęk. Problemem jest brak struktury decyzji.",
-      risk:
-        "Ryzyko #1: decyzja w szczycie emocji.\n" +
-        "Ryzyko #2: przeciąganie = też decyzja.\n" +
-        "Ocena: średnie — da się zbić ramą.",
-      recommendation:
-        "Wybieramy jedną opcję i testujemy w rzeczywistości.\n\n" +
-        "Opcje:\n" + opt.map(x=>"• "+x).join("\n") + "\n\n" +
-        "Teraz wybór: A czy B? (jedna litera).\n" +
-        "Jeśli nie umiesz: napisz, czego bardziej boisz się stracić (1 zdanie)."
-    };
-  }
-
-  async function run(){
-    const text = normalize(document.getElementById("input").value);
-    const out = stanDemo(text);
-    document.getElementById("analysis").textContent = out.analysis;
-    document.getElementById("risk").textContent = out.risk;
-    document.getElementById("recommendation").textContent = out.recommendation;
-
-    // auto-mówienie (opcjonalne): STAN mówi rekomendację
-    speak(out.recommendation);
-  }
-
-  document.getElementById("analyzeBtn").addEventListener("click", run);
-
-  document.getElementById("listenBtn").addEventListener("click", ()=>{
-    if(!canListen){
-      document.getElementById("voiceChip").textContent =
-        "Głos: słuchanie – BRAK (iOS PWA często blokuje). Użyj dyktowania klawiatury.";
-      return;
-    }
-    if(listening){ try{ recognition.stop(); }catch(e){} return; }
-    try{ recognition.start(); }catch(e){
-      document.getElementById("voiceChip").textContent = "Głos: słuchanie – nie mogę uruchomić";
-    }
-  });
-
-  document.getElementById("speakBtn").addEventListener("click", ()=>{
-    const t = [
-      document.getElementById("analysis").textContent,
-      document.getElementById("risk").textContent,
-      document.getElementById("recommendation").textContent
-    ].join("\n\n");
-    speak(t);
-  });
-
-  document.getElementById("stopBtn").addEventListener("click", stopAllAudio);
-
-  // init
-  setPwaChip();
-  document.getElementById("voiceChip").textContent =
-    "Głos: " + (canListen ? "słuchanie+ mówienie" : (canSpeak ? "mówienie" : "brak"));
+</script>
 </script>
 </body>
 </html>
