@@ -5,263 +5,560 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>STAN</title>
 
-  <!-- iOS / PWA -->
+  <!-- PWA -->
   <meta name="theme-color" content="#0B0F1A" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="STAN" />
 
-  <!-- cache-busters: po deployu nie ma starej wersji -->
-  <meta http-equiv="Cache-Control" content="no-store, max-age=0" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
+  <!-- Manifest -->
+  <link rel="manifest" href="manifest.json" />
 
-  <link rel="manifest" href="manifest.json?v=20260219-01" />
-  <link rel="apple-touch-icon" href="icon-192.png?v=20260219-01" />
+  <!-- iOS icon (UWAGA: zmieniamy nazwę, żeby iPhone nie trzymał cache) -->
+  <link rel="apple-touch-icon" href="apple-touch-icon-v2.png" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192-v2.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512-v2.png" />
 
   <style>
     :root{
-      --bg:#0B0F1A;
-      --surface:#111827;
-      --card:#1A2333;
-      --text:#E5E7EB;
-      --muted:#9CA3AF;
-      --accent1:#4F7CFF;
-      --accent2:#7BA7FF;
-      --danger:#FF5A5F;
-      --ok:#34D399;
+      --bg:#070A12;
+      --bg2:#0B0F1A;
+      --surface: rgba(17, 24, 39, .62);
+      --stroke: rgba(255,255,255,.10);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.62);
+
+      /* orb */
+      --hue: 220;        /* zmieniane trybem */
+      --glow: 0.85;      /* intensywność */
+      --pulse: 6.5s;     /* tempo */
+      --orbSize: clamp(180px, 52vw, 280px);
+
+      /* layout */
+      --radius: 22px;
+      --pad: 18px;
+      --maxw: 720px;
+
+      /* status */
+      --chipBg: rgba(0,0,0,.22);
+      --chipStroke: rgba(255,255,255,.10);
     }
 
+    /* tryby (B): calm / neutral / pressure */
+    body.mode-calm   { --hue: 210; --glow: .70; --pulse: 7.5s; }
+    body.mode-neutral{ --hue: 235; --glow: .85; --pulse: 6.5s; }
+    body.mode-pressure{ --hue: 280; --glow: 1.05; --pulse: 5.2s; }
+
+    /* etapy (C): clarify / weigh / act */
+    body.stage-clarify { }
+    body.stage-weigh   { }
+    body.stage-act     { }
+
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; }
     body{
       margin:0;
-      background:linear-gradient(180deg,#0B0F1A,#0E1628);
-      font-family:-apple-system,BlinkMacSystemFont,system-ui,Segoe UI,Roboto,sans-serif;
-      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color: var(--text);
+      background: radial-gradient(1200px 800px at 20% 10%, rgba(120,140,255,.14), transparent 60%),
+                  radial-gradient(900px 700px at 80% 30%, rgba(210,120,255,.10), transparent 55%),
+                  linear-gradient(180deg, var(--bg2), var(--bg));
+      overflow-x:hidden;
     }
 
-    .container{
-      max-width:740px;
-      margin:0 auto;
-      padding:24px;
-      padding-bottom:32px;
+    /* "gwiezdny pył" */
+    body:before{
+      content:"";
+      position:fixed; inset:-20%;
+      background:
+        radial-gradient(2px 2px at 10% 20%, rgba(255,255,255,.18), transparent 50%),
+        radial-gradient(1px 1px at 30% 70%, rgba(255,255,255,.12), transparent 50%),
+        radial-gradient(1px 1px at 65% 35%, rgba(255,255,255,.10), transparent 50%),
+        radial-gradient(2px 2px at 85% 65%, rgba(255,255,255,.14), transparent 50%),
+        radial-gradient(1px 1px at 55% 80%, rgba(255,255,255,.10), transparent 50%);
+      opacity:.9;
+      filter: blur(.2px);
+      pointer-events:none;
+      animation: drift 18s linear infinite;
+      transform: translateZ(0);
+    }
+    @keyframes drift{
+      0%{ transform: translate3d(0,0,0); }
+      50%{ transform: translate3d(-10px, 10px,0); }
+      100%{ transform: translate3d(0,0,0); }
     }
 
-    h1{ margin: 10px 0 4px; font-size:44px; letter-spacing:0.2px; }
-    .subtitle{ color:var(--muted); margin-bottom:20px; }
+    .wrap{
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: calc(18px + env(safe-area-inset-top)) var(--pad) calc(24px + env(safe-area-inset-bottom));
+      position:relative;
+    }
 
-    .card{
-      margin-top:18px;
-      padding:18px;
-      background:rgba(26,35,51,0.92);
-      border-radius:18px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.25);
+    header{
+      padding: 8px 0 14px;
+    }
+    .title{
+      font-size: 44px;
+      letter-spacing: .8px;
+      margin: 0;
+      line-height:1;
+    }
+    .subtitle{
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .scene{
+      margin-top: 12px;
+      position: relative;
+      border-radius: var(--radius);
+      overflow:hidden;
+      border: 1px solid rgba(255,255,255,.06);
+      background: radial-gradient(800px 400px at 50% 0%, rgba(120,140,255,.10), transparent 55%),
+                  rgba(0,0,0,.12);
+      padding: 20px 18px 14px;
+    }
+
+    /* orb */
+    .orb-stage{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 10px 0 14px;
+    }
+    .orb{
+      width: var(--orbSize);
+      height: var(--orbSize);
+      border-radius: 999px;
+      position: relative;
+      filter: drop-shadow(0 0 36px hsla(var(--hue), 95%, 65%, calc(.45 * var(--glow))));
+      background:
+        radial-gradient(circle at 50% 45%,
+          hsla(var(--hue), 95%, 82%, .95) 0%,
+          hsla(var(--hue), 95%, 66%, .65) 18%,
+          hsla(var(--hue), 95%, 50%, .35) 40%,
+          hsla(var(--hue), 95%, 40%, .18) 62%,
+          rgba(0,0,0,0) 70%),
+        radial-gradient(circle at 50% 60%,
+          rgba(255,255,255,.22), rgba(255,255,255,0) 55%);
+      animation: pulse var(--pulse) ease-in-out infinite;
+      transform: translateZ(0);
+    }
+    .orb:before{
+      content:"";
+      position:absolute; inset:-14%;
+      border-radius:999px;
+      background:
+        radial-gradient(circle at 50% 50%,
+          hsla(var(--hue), 90%, 65%, calc(.22 * var(--glow))) 0%,
+          hsla(var(--hue), 90%, 65%, calc(.08 * var(--glow))) 35%,
+          rgba(0,0,0,0) 70%);
+      filter: blur(14px);
+      opacity:.95;
+    }
+    .orb:after{
+      content:"";
+      position:absolute; inset: 10%;
+      border-radius:999px;
+      border: 1px solid rgba(255,255,255,.08);
+      box-shadow: inset 0 0 22px rgba(255,255,255,.05);
+      opacity:.9;
+    }
+    @keyframes pulse{
+      0%,100%{ transform: scale(1); }
+      50%{ transform: scale(1.02); }
+    }
+
+    /* semi-human overlay (subtelny, jak na wizce) */
+    .avatar{
+      position:absolute;
+      right: 10px;
+      bottom: 10px;
+      width: 118px;
+      height: 118px;
+      opacity: .0;
+      transform: translate3d(0, 10px, 0) scale(.98);
+      transition: opacity .35s ease, transform .35s ease;
+      pointer-events:none;
+      filter: drop-shadow(0 0 22px rgba(140,170,255,.22));
+    }
+    body.mode-pressure .avatar{
+      opacity: .92;
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    .glass{
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
     textarea{
       width:100%;
-      height:150px;
-      padding:16px;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,0.06);
-      background:rgba(17,24,39,0.9);
-      color:var(--text);
-      font-size:16px;
-      line-height:1.35;
-      resize:none;
+      min-height: 130px;
+      resize: vertical;
+      padding: 14px 14px;
+      color: var(--text);
+      background: rgba(15, 20, 35, .55);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
       outline:none;
+      font-size: 16px;
+      line-height: 1.35;
     }
+    textarea::placeholder{ color: rgba(255,255,255,.45); }
 
     .btn{
       width:100%;
-      margin-top:18px;
-      padding:16px;
-      border:none;
-      border-radius:18px;
-      font-size:18px;
-      font-weight:700;
-      color:white;
-      background:linear-gradient(90deg,var(--accent1),var(--accent2));
-      box-shadow:0 10px 28px rgba(79,124,255,0.25);
+      margin-top: 14px;
+      padding: 16px 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: linear-gradient(90deg,
+        hsla(var(--hue), 90%, 62%, .95),
+        hsla(var(--hue), 90%, 68%, .92));
+      color: white;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: .2px;
       cursor:pointer;
-      user-select:none;
-      -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 14px 30px rgba(0,0,0,.28);
     }
     .btn:active{ transform: translateY(1px); }
+
+    .chips{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin-top: 12px;
+    }
+    .chip{
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--chipBg);
+      border: 1px solid var(--chipStroke);
+      color: rgba(255,255,255,.70);
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .chip.ok{
+      border-color: rgba(100,255,190,.30);
+      color: rgba(140,255,210,.85);
+      background: rgba(0,0,0,.18);
+    }
+
+    .card{
+      margin-top: 14px;
+      padding: 18px 16px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(10, 14, 26, .40);
+    }
+    .card h3{
+      margin: 0 0 8px;
+      font-size: 30px;
+      letter-spacing: .2px;
+    }
+    .card p{
+      margin:0;
+      color: rgba(255,255,255,.70);
+      font-size: 16px;
+      line-height: 1.35;
+      white-space: pre-wrap;
+    }
 
     .row{
       display:flex;
       gap:10px;
-      margin-top:12px;
-      flex-wrap:wrap;
+      margin-top: 14px;
     }
-
-    .pill{
-      font-size:12px;
-      padding:6px 10px;
-      border-radius:999px;
-      background:rgba(255,255,255,0.06);
-      color:var(--muted);
-    }
-
-    .pill.ok{ color:var(--ok); border:1px solid rgba(52,211,153,0.35); }
-    .pill.bad{ color:var(--danger); border:1px solid rgba(255,90,95,0.35); }
-
-    .result-title{
-      font-weight:800;
-      font-size:22px;
-      margin:0 0 6px;
-    }
-    .muted{ color:var(--muted); white-space:pre-wrap; }
-
-    .tiny{
-      margin-top:14px;
-      font-size:12px;
-      color:rgba(156,163,175,0.75);
-    }
-
-    .linkbtn{
-      background:transparent;
-      border:1px solid rgba(255,255,255,0.14);
-      color:var(--text);
-      padding:10px 12px;
-      border-radius:14px;
-      font-weight:700;
+    .row button{
+      flex:1;
+      padding: 12px 12px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.10);
+      color: rgba(255,255,255,.78);
+      font-weight: 700;
       cursor:pointer;
+    }
+
+    .smallnote{
+      margin-top: 12px;
+      color: rgba(255,255,255,.45);
+      font-size: 12px;
     }
   </style>
 </head>
 
-<body>
-  <div class="container">
-    <h1>STAN</h1>
-    <div class="subtitle">Agent decyzyjny AI</div>
+<body class="mode-neutral stage-clarify">
+  <div class="wrap">
+    <header>
+      <h1 class="title">STAN</h1>
+      <div class="subtitle">Agent decyzyjny AI</div>
+    </header>
 
-    <textarea id="input" placeholder="Opisz sytuację. Co się stało? Co chcesz osiągnąć? Jakie masz ograniczenia?"></textarea>
-    <button class="btn" id="analyzeBtn">Analiza →</button>
+    <section class="scene glass">
+      <div class="orb-stage">
+        <div class="orb" aria-hidden="true"></div>
+      </div>
 
-    <div class="row">
-      <div class="pill" id="modePill">Tryb: DEMO (bez API)</div>
-      <div class="pill" id="pwaPill">PWA: …</div>
-      <div class="pill" id="cachePill">Wersja: 20260219-01</div>
-    </div>
+      <!-- semi-human overlay (SVG) -->
+      <svg class="avatar" viewBox="0 0 120 120" aria-hidden="true">
+        <defs>
+          <radialGradient id="gFace" cx="50%" cy="40%" r="70%">
+            <stop offset="0%" stop-color="rgba(190,210,255,.22)"/>
+            <stop offset="55%" stop-color="rgba(120,150,255,.10)"/>
+            <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+          </radialGradient>
+          <radialGradient id="gEye" cx="50%" cy="50%" r="60%">
+            <stop offset="0%" stop-color="rgba(255,255,255,.95)"/>
+            <stop offset="40%" stop-color="rgba(160,190,255,.75)"/>
+            <stop offset="100%" stop-color="rgba(120,150,255,0)"/>
+          </radialGradient>
+          <filter id="blurGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2.2" result="blur"/>
+            <feColorMatrix in="blur" type="matrix"
+              values="1 0 0 0 0
+                      0 1 0 0 0
+                      0 0 1 0 0
+                      0 0 0 0.85 0" />
+            <feMerge>
+              <feMergeNode/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
 
-    <div class="card">
-      <div class="result-title">Analiza</div>
-      <div id="analysis" class="muted">Tu pojawi się analiza.</div>
-    </div>
+        <!-- głowa -->
+        <path d="M60 18
+                 C78 18, 92 34, 92 54
+                 C92 78, 79 98, 60 102
+                 C41 98, 28 78, 28 54
+                 C28 34, 42 18, 60 18Z"
+              fill="url(#gFace)"
+              stroke="rgba(210,220,255,.18)"
+              stroke-width="1.2" />
 
-    <div class="card">
-      <div class="result-title">Ryzyko</div>
-      <div id="risk" class="muted">Tu pojawi się ocena ryzyka.</div>
-    </div>
+        <!-- delikatny kontur -->
+        <path d="M60 22
+                 C75 22, 87 36, 87 54
+                 C87 75, 76 92, 60 96
+                 C44 92, 33 75, 33 54
+                 C33 36, 45 22, 60 22Z"
+              fill="none"
+              stroke="rgba(255,255,255,.10)"
+              stroke-width="1"/>
 
-    <div class="card">
-      <div class="result-title">Rekomendacja</div>
-      <div id="recommendation" class="muted">Tu pojawi się rekomendacja.</div>
-    </div>
+        <!-- oczy -->
+        <g filter="url(#blurGlow)">
+          <circle cx="47" cy="56" r="7.2" fill="url(#gEye)"/>
+          <circle cx="73" cy="56" r="7.2" fill="url(#gEye)"/>
+        </g>
 
-    <div class="row">
-      <button class="linkbtn" id="hardRefreshBtn">Wymuś odświeżenie</button>
-      <button class="linkbtn" id="clearBtn">Wyczyść</button>
-    </div>
+        <!-- “szyja / kabelki” -->
+        <path d="M52 98 C54 92, 66 92, 68 98"
+              stroke="rgba(140,170,255,.22)" stroke-width="2" fill="none"/>
+      </svg>
 
-    <div class="tiny">
-      Jeśli po deployu apka na ekranie pokazuje starą wersję — kliknij „Wymuś odświeżenie”.
-    </div>
+      <textarea id="input"
+        placeholder="Opisz sytuację. Co się stało? Co chcesz osiągnąć? Jakie masz ograniczenia?"></textarea>
+
+      <button class="btn" onclick="analyze()">Analiza →</button>
+
+      <div class="chips">
+        <div class="chip" id="chipMode">Tryb: DEMO (bez API)</div>
+        <div class="chip" id="chipPwa">PWA: ...</div>
+        <div class="chip" id="chipVer">Wersja: 20260219-01</div>
+      </div>
+
+      <div class="card">
+        <h3>Analiza</h3>
+        <p id="analysis">Tu pojawi się analiza.</p>
+      </div>
+
+      <div class="card">
+        <h3>Ryzyko</h3>
+        <p id="risk">Tu pojawi się ocena ryzyka.</p>
+      </div>
+
+      <div class="card">
+        <h3>Rekomendacja</h3>
+        <p id="recommendation">Tu pojawi się rekomendacja.</p>
+      </div>
+
+      <div class="row">
+        <button onclick="hardRefresh()">Wymuś odświeżenie</button>
+        <button onclick="clearAll()">Wyczyść</button>
+      </div>
+
+      <div class="smallnote">
+        STAN: miły i elegancki, ale czasem cięty. Jeśli brakuje danych — dopytuje. Jeśli kręcisz w kółko — przyciska.
+      </div>
+    </section>
   </div>
 
-<script>
-/** =========
- *  STAN DEMO (bez API) — działa zawsze (Safari + PWA)
- *  ========= */
+  <script>
+    // --- PWA status (bez proszenia usera) ---
+    function isStandalone() {
+      // iOS Safari
+      if (window.navigator.standalone) return true;
+      // Chrome/Android + iOS 16+ czasem
+      return window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+    }
 
-const VERSION = "20260219-01";
+    function setChipPwa() {
+      const el = document.getElementById('chipPwa');
+      const ok = isStandalone();
+      el.textContent = 'PWA: ' + (ok ? 'TAK' : 'NIE');
+      el.classList.toggle('ok', ok);
+    }
+    setChipPwa();
+    window.addEventListener('visibilitychange', setChipPwa);
 
-function isPWA() {
-  // iOS Safari standalone
-  const iosStandalone = window.navigator.standalone === true;
-  // inne przeglądarki
-  const displayModeStandalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
-  return iosStandalone || displayModeStandalone;
-}
+    // --- STAN: heurystyka trybów B + etapów C ---
+    function classify(text) {
+      const t = (text || '').trim();
+      const lower = t.toLowerCase();
 
-function setPills() {
-  document.getElementById("pwaPill").textContent = isPWA() ? "PWA: TAK" : "PWA: NIE";
-  document.getElementById("pwaPill").className = "pill " + (isPWA() ? "ok" : "");
-  document.getElementById("modePill").textContent = "Tryb: DEMO (bez API)";
-  document.getElementById("cachePill").textContent = "Wersja: " + VERSION;
-}
+      const hasAB = /\b(a\/b|a\b.*\bb\b|\bopcja\b|\bdwie\b.*\bopcje\b)/i.test(t);
+      const hasNumbers = /\d/.test(t);
+      const hasTime = /\b(7\s*dni|30\s*dni|tydzień|miesiąc|dni|jutro|dziś|termin)\b/i.test(t);
+      const hasConstraints = /\b(pienią|czas|zdrow|kredyt|czynsz|dług|zobowią|budżet|limit)\b/i.test(t);
 
-function stanDemo(text) {
-  const emocje = /(boję|zła|wkurz|frustr|smutn|żal|rozbita|złość|strach|panika|bezsiln|nerw)/i.test(text);
-  const relacja = /(partner|związek|on|ona|relacja|kłótn|granice|szacunek)/i.test(text);
-  const kasa = /(pieniądz|kasa|dług|kredyt|czynsz|dochód|praca|budżet)/i.test(text);
+      // emocje / presja (łagodnie wykrywana)
+      const emoScore =
+        (/[!?]{2,}/.test(t) ? 1 : 0) +
+        (/\b(kurwa|chuj|pierdol|wkurwia|zajebi|jeb)\b/i.test(t) ? 2 : 0) +
+        (/\b(boję|strach|panik|rozbita|duszę|nie dam|nie wiem)\b/i.test(t) ? 1 : 0);
 
-  const brakDanych = text.length < 140;
+      // Tryb (B)
+      let mode = 'neutral';
+      if (emoScore >= 2) mode = 'pressure';
+      else if (emoScore === 0 && t.length >= 220) mode = 'calm';
 
-  let analysis = "Dobra. Zatrzymajmy chaos na chwilę i złapmy fakty. ";
-  analysis += "Ja nie wróżę. Ja mierzę. ";
+      // Etap (C)
+      let stage = 'clarify';
+      if ((hasAB || hasConstraints) && t.length >= 160) stage = 'weigh';
+      if (hasTime && hasConstraints && (hasAB || hasNumbers) && t.length >= 180) stage = 'act';
 
-  if (emocje) analysis += "Emocje są wysokie — to normalne, ale podkręca ryzyko złej decyzji. ";
-  if (relacja) analysis += "To wygląda na temat granic i równowagi w relacji (nie na jedną kłótnię). ";
-  if (kasa) analysis += "Widzę też oś bezpieczeństwa finansowego — to twardy constraint, nie 'wymówka'. ";
-  if (brakDanych) analysis += "Brakuje mi danych. I nie będę udawał, że je mam — doprecyzujemy. ";
+      return { mode, stage, hasAB, hasConstraints, hasTime, emoScore };
+    }
 
-  let risk = "Ryzyko decyzji impulsywnej / błędnej interpretacji: ";
-  risk += emocje ? "wysokie (emocje wysokie, dane niepełne)." : "średnie (dane niepełne).";
+    function applyModeStage(mode, stage) {
+      document.body.classList.remove('mode-calm','mode-neutral','mode-pressure');
+      document.body.classList.add('mode-' + mode);
 
-  let recommendation =
-    "Zanim pójdziemy dalej, odpowiedz krótko (1–2 zdania na punkt):\n" +
-    "1) Co jest celem (jeden konkretny efekt)?\n" +
-    "2) Jakie są twarde ograniczenia (czas/pieniądze/zdrowie)?\n" +
-    "3) Jakie są 2 realne opcje A/B na dziś?\n\n" +
-    "Potem zrobię Ci plan na 7 dni i 30 dni — bez lania wody. " +
-    "I jeśli będziesz uciekać w mgłę: będę miły, ale nie dam Ci się wykręcić.";
+      document.body.classList.remove('stage-clarify','stage-weigh','stage-act');
+      document.body.classList.add('stage-' + stage);
+    }
 
-  return { analysis, risk, recommendation };
-}
+    // --- “Inteligencja” DEMO (bez API) ---
+    function stanDemo(text) {
+      const t = (text || '').trim();
+      const { mode, stage, hasAB, hasConstraints, hasTime } = classify(t);
 
-function render(out) {
-  document.getElementById("analysis").innerText = out.analysis;
-  document.getElementById("risk").innerText = out.risk;
-  document.getElementById("recommendation").innerText = out.recommendation;
-}
+      // STAN mówi w 1. osobie, naturalnie, czasem przycina.
+      let analysis = '';
+      let risk = '';
+      let rec = '';
 
-function analyze() {
-  const text = (document.getElementById("input").value || "").trim();
+      if (t.length < 30) {
+        analysis = 'Widzę mgłę, nie sytuację. To za mało danych, żebym nie zaczął zgadywać.';
+        risk = 'Ryzyko: wysokie (wróżenie z fusów).';
+        rec = 'Dopisz 2–3 zdania: co jest celem, co blokuje, i co jest stawką. Potem ruszymy.';
+        return { analysis, risk, recommendation: rec, mode, stage: 'clarify' };
+      }
 
-  if (text.length < 15) {
-    alert("Daj mi minimum 2–3 zdania. Inaczej będę zgadywać, a nie o to chodzi.");
-    return;
-  }
+      // ANALIZA
+      if (stage === 'clarify') {
+        analysis =
+`Dobra. Zatrzymajmy chaos na chwilę i złapmy fakty.
+Brakuje mi konkretów: opcji i ograniczeń. Nie kończę na skróty — dopytam.
+Nie będę wróżyć. Będę mierzyć.`;
+      } else if (stage === 'weigh') {
+        analysis =
+`Widzę temat decyzyjny, a nie “problem do ponarzekania” — i to dobrze.
+Masz co najmniej dwie ścieżki. Teraz trzeba policzyć koszty, ryzyka i konsekwencje w czasie.
+Jeśli będziesz unikać konkretu, przycisnę — bo inaczej utkniesz.`;
+      } else { // act
+        analysis =
+`Masz już dość danych, żeby przestać się kręcić i zacząć działać.
+To jest moment “plan albo stop”. Wchodzimy w konkret: 7 dni i 30 dni.
+I tak: będę Cię trzymał przy faktach.`;
+      }
 
-  const out = stanDemo(text);
-  render(out);
-}
+      // RYZYKO
+      if (mode === 'pressure') {
+        risk = 'Ryzyko eskalacji przez impuls / emocje: wysokie. Utnij decyzje podejmowane “w szczycie”.';
+      } else if (stage === 'act') {
+        risk = 'Ryzyko: średnie. Największe zagrożenie to zbyt duży skok bez bufora i bez testu.';
+      } else {
+        risk = 'Ryzyko: średnie (braki danych). Najczęściej tu ludzie mylą strach z rozsądkiem.';
+      }
 
-/** =========
- *  PWA cache killer: wymuś świeżą wersję
- *  ========= */
-function hardRefresh() {
-  // Wersjonujemy URL żeby iOS PWA nie trzymała starego cache
-  const url = new URL(window.location.href);
-  url.searchParams.set("v", VERSION);
-  url.searchParams.set("t", String(Date.now()));
-  window.location.replace(url.toString());
-}
+      // REKOMENDACJA (konfront + konkret)
+      if (!hasConstraints) {
+        rec =
+`Najpierw odpowiedz mi na 2 pytania:
+1) Jakie są twarde ograniczenia (czas/pieniądze/zdrowie)?
+2) Jakie są 2 realne opcje do wyboru (A/B)?
+Bez tego zrobię ładny tekst, a Ty dalej staniesz w miejscu.`;
+      } else if (!hasAB) {
+        rec =
+`Masz ograniczenia — super. Teraz brakuje opcji.
+Wypisz A i B w jednym zdaniu każda (bez poezji). Potem ułożę plan na 7 i 30 dni.`;
+      } else if (!hasTime) {
+        rec =
+`Masz A/B i ograniczenia. Dopnij horyzont: kiedy najpóźniej musisz zdecydować?
+Daj mi termin albo widełki, a ja zrobię plan 7 dni / 30 dni — bez lania wody.`;
+      } else {
+        rec =
+`Plan 7 dni:
+- Dzień 1: spisz A/B + 3 kryteria (pieniądze/czas/energia).
+- Dni 2–3: zrób mini-test wersji A (2h) i mini-test wersji B (2h). Zapisz wynik, nie wrażenie.
+- Dni 4–5: policz koszt (czas + kasa) i ryzyko (co pójdzie źle).
+- Dni 6–7: wybór “tymczasowy” na 14 dni + jedna blokada ryzyka (bufor/limit/zasada).
 
-function clearAll() {
-  document.getElementById("input").value = "";
-  document.getElementById("analysis").innerText = "Tu pojawi się analiza.";
-  document.getElementById("risk").innerText = "Tu pojawi się ocena ryzyka.";
-  document.getElementById("recommendation").innerText = "Tu pojawi się rekomendacja.";
-}
+Plan 30 dni:
+- Tydzień 1: rytm pracy + testy A/B.
+- Tydzień 2: jedna rzecz, która daje sygnał od rynku (feedback/klient/metryka).
+- Tydzień 3: decyzja: pogłębiam A czy B (na podstawie danych).
+- Tydzień 4: stabilizacja: ograniczenia, budżet, plan na kolejne 30 dni.
 
-document.getElementById("analyzeBtn").addEventListener("click", analyze);
-document.getElementById("hardRefreshBtn").addEventListener("click", hardRefresh);
-document.getElementById("clearBtn").addEventListener("click", clearAll);
+Jeśli chcesz, doprecyzuję to pod Twoje liczby.`;
+      }
 
-setPills();
-</script>
+      return { analysis, risk, recommendation: rec, mode, stage };
+    }
+
+    // --- UI actions ---
+    async function analyze() {
+      const text = document.getElementById('input').value || '';
+      const out = stanDemo(text);
+
+      applyModeStage(out.mode, out.stage);
+
+      document.getElementById('analysis').textContent = out.analysis;
+      document.getElementById('risk').textContent = out.risk;
+      document.getElementById('recommendation').textContent = out.recommendation;
+    }
+
+    function clearAll() {
+      document.getElementById('input').value = '';
+      document.getElementById('analysis').textContent = 'Tu pojawi się analiza.';
+      document.getElementById('risk').textContent = 'Tu pojawi się ocena ryzyka.';
+      document.getElementById('recommendation').textContent = 'Tu pojawi się rekomendacja.';
+      applyModeStage('neutral', 'clarify');
+    }
+
+    function hardRefresh() {
+      // cache-bust bez kombinowania: zmiana query powoduje pobranie od nowa
+      const url = new URL(window.location.href);
+      url.searchParams.set('v', String(Date.now()));
+      window.location.replace(url.toString());
+    }
+  </script>
 </body>
 </html>
