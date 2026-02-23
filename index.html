@@ -16,29 +16,22 @@
 
   <style>
     :root{
-      --bg:#070A12;
-      --bg2:#0B0F1A;
+      --bg:#070A12; --bg2:#0B0F1A;
       --surface: rgba(255,255,255,0.06);
-      --surface2: rgba(255,255,255,0.08);
       --stroke: rgba(255,255,255,0.10);
       --text:#EAF0FF;
       --muted: rgba(234,240,255,0.72);
       --muted2: rgba(234,240,255,0.55);
-      --accent1:#7B5CFF;
-      --accent2:#B256FF;
-      --good:#45D483;
-      --warn:#F0C04A;
-
+      --a1:#7B5CFF; --a2:#B256FF;
+      --good:#45D483; --warn:#F0C04A;
       --r: 22px;
       --shadow: 0 18px 60px rgba(0,0,0,0.45);
     }
-
     *{ box-sizing:border-box; }
     html,body{ height:100%; }
     body{
-      margin:0;
-      color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      margin:0; color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
       background:
         radial-gradient(1200px 700px at 65% 18%, rgba(123,92,255,0.23), transparent 55%),
         radial-gradient(900px 520px at 22% 70%, rgba(178,86,255,0.16), transparent 60%),
@@ -47,25 +40,9 @@
       padding-top: max(22px, env(safe-area-inset-top));
       padding-bottom: max(40px, env(safe-area-inset-bottom));
     }
-
-    .wrap{
-      max-width: 560px;
-      margin: 0 auto;
-    }
-
-    .title{
-      font-size: 56px;
-      line-height: 0.95;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      margin: 10px 0 8px;
-    }
-    .subtitle{
-      margin: 0 0 18px;
-      color: var(--muted2);
-      font-size: 18px;
-      letter-spacing: 0.01em;
-    }
+    .wrap{ max-width:560px; margin:0 auto; }
+    .title{ font-size:56px; line-height:0.95; font-weight:800; letter-spacing:-0.02em; margin:10px 0 8px; }
+    .subtitle{ margin:0 0 18px; color:var(--muted2); font-size:18px; }
 
     .hero{
       border-radius: var(--r);
@@ -77,7 +54,7 @@
     }
 
     .avatarBox{
-      width: 100%;
+      width:100%;
       aspect-ratio: 1 / 1;
       border-radius: calc(var(--r) - 6px);
       border: 1px solid rgba(255,255,255,0.12);
@@ -85,83 +62,84 @@
         radial-gradient(650px 420px at 50% 40%, rgba(123,92,255,0.22), rgba(0,0,0,0) 55%),
         radial-gradient(800px 520px at 50% 110%, rgba(178,86,255,0.14), rgba(0,0,0,0) 60%),
         rgba(0,0,0,0.22);
+      position: relative;
+      overflow:hidden;
+      margin-bottom:14px;
       display:flex;
       align-items:center;
       justify-content:center;
-      overflow:hidden;
-      position: relative;
-      margin-bottom: 14px;
     }
 
-    .avatarImg{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transform: scale(1.02);
-      filter: saturate(1.08) contrast(1.05);
-      user-select:none;
-      -webkit-user-drag:none;
-      pointer-events:none;
+    /* ORB (CSS, always works) */
+    .orb{
+      width:72%; aspect-ratio:1/1; border-radius:999px; position:relative;
+      background:
+        radial-gradient(circle at 35% 30%, rgba(255,255,255,0.34), rgba(255,255,255,0.06) 22%, rgba(0,0,0,0) 45%),
+        radial-gradient(circle at 50% 55%, rgba(178,86,255,0.38), rgba(123,92,255,0.22) 40%, rgba(0,0,0,0) 70%),
+        radial-gradient(circle at 50% 50%, rgba(90,70,255,0.25), rgba(0,0,0,0) 72%),
+        radial-gradient(circle at 50% 50%, rgba(0,0,0,0.55), rgba(0,0,0,0.0) 60%);
+      box-shadow:
+        0 0 80px rgba(123,92,255,0.35),
+        0 0 140px rgba(178,86,255,0.20),
+        inset 0 0 35px rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.12);
     }
-
-    .hint{
-      position:absolute;
-      bottom: 10px;
-      right: 10px;
-      font-size: 12px;
-      color: rgba(234,240,255,0.55);
-      background: rgba(0,0,0,0.25);
-      border: 1px solid rgba(255,255,255,0.10);
-      padding: 8px 10px;
-      border-radius: 999px;
-      backdrop-filter: blur(10px);
+    .orb:after{
+      content:"";
+      position:absolute; left:-10%; right:-10%; top:48%;
+      height:3px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.75), transparent);
+      box-shadow: 0 0 18px rgba(178,86,255,0.55);
+      opacity:0.9;
     }
 
     textarea{
-      width:100%;
-      min-height: 112px;
-      resize: vertical;
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,0.12);
+      width:100%; min-height:112px; resize: vertical;
+      border-radius:18px; border: 1px solid rgba(255,255,255,0.12);
       background: rgba(0,0,0,0.22);
-      color: var(--text);
-      padding: 14px 14px;
-      font-size: 16px;
-      line-height: 1.35;
+      color: var(--text); padding: 14px;
+      font-size: 16px; line-height: 1.35;
       outline: none;
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
     }
     textarea::placeholder{ color: rgba(234,240,255,0.45); }
 
     .btn{
-      width:100%;
-      margin-top: 12px;
-      border: none;
-      border-radius: 18px;
-      padding: 16px 18px;
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: 0.01em;
-      color: white;
-      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+      width:100%; margin-top:12px;
+      border:none; border-radius:18px;
+      padding:16px 18px;
+      font-size:20px; font-weight:800; color:white;
+      background: linear-gradient(90deg, var(--a1), var(--a2));
       box-shadow: 0 18px 50px rgba(123,92,255,0.22);
-      cursor: pointer;
+      cursor:pointer;
       user-select:none;
     }
     .btn:active{ transform: translateY(1px); }
 
+    .row{
+      display:flex; gap:10px; margin-top:10px;
+    }
+    .smallBtn{
+      flex:1;
+      border-radius:16px;
+      padding:12px 14px;
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: rgba(234,240,255,0.85);
+      font-weight:800;
+      cursor:pointer;
+    }
+    .smallBtn.primary{
+      background: linear-gradient(90deg, rgba(123,92,255,0.40), rgba(178,86,255,0.35));
+      border-color: rgba(255,255,255,0.14);
+    }
+
     .chips{
       margin-top: 12px;
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items:center;
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
     }
     .chip{
-      font-size: 13px;
-      color: rgba(234,240,255,0.70);
-      padding: 9px 12px;
-      border-radius: 999px;
+      font-size:13px; color: rgba(234,240,255,0.70);
+      padding: 9px 12px; border-radius:999px;
       border: 1px solid rgba(255,255,255,0.10);
       background: rgba(0,0,0,0.16);
       backdrop-filter: blur(10px);
@@ -169,45 +147,21 @@
     .chip.good{ border-color: rgba(69,212,131,0.35); color: rgba(69,212,131,0.95); }
     .chip.warn{ border-color: rgba(240,192,74,0.35); color: rgba(240,192,74,0.95); }
 
-    .grid{
-      margin-top: 16px;
-      display: grid;
-      gap: 12px;
-    }
+    .grid{ margin-top:16px; display:grid; gap:12px; }
     .card{
-      border-radius: 20px;
+      border-radius:20px;
       border: 1px solid rgba(255,255,255,0.10);
       background: rgba(255,255,255,0.05);
       box-shadow: 0 12px 40px rgba(0,0,0,0.35);
-      padding: 16px;
+      padding:16px;
     }
-    .card h3{
-      margin: 0 0 8px;
-      font-size: 34px;
-      letter-spacing: -0.02em;
-    }
+    .card h3{ margin:0 0 8px; font-size:34px; letter-spacing:-0.02em; }
     .card .text{
-      margin: 0;
+      margin:0;
       color: rgba(234,240,255,0.74);
-      font-size: 16px;
-      line-height: 1.42;
+      font-size:16px;
+      line-height:1.42;
       white-space: pre-wrap;
-    }
-
-    .footerBtns{
-      margin-top: 12px;
-      display:flex;
-      gap: 10px;
-    }
-    .ghost{
-      flex:1;
-      border-radius: 16px;
-      padding: 12px 14px;
-      background: rgba(0,0,0,0.18);
-      border: 1px solid rgba(255,255,255,0.10);
-      color: rgba(234,240,255,0.78);
-      font-weight: 700;
-      cursor:pointer;
     }
   </style>
 </head>
@@ -218,18 +172,25 @@
     <div class="subtitle">Agent decyzyjny AI</div>
 
     <div class="hero">
-      <div class="avatarBox" id="avatarBox" title="Dla Ciebie: semihuman. Dla innych: orb.">
-        <img id="avatarImg" class="avatarImg" alt="STAN avatar" />
-        <div class="hint">Przytrzymaj 1s: przełącz avatar</div>
+      <div class="avatarBox" id="avatarBox">
+        <div class="orb" aria-label="STAN orb"></div>
       </div>
 
       <textarea id="input" placeholder="Opisz sytuację. Co się stało? Co chcesz osiągnąć? Jakie masz ograniczenia?"></textarea>
+
       <button class="btn" id="analyzeBtn">Analiza →</button>
+
+      <div class="row">
+        <button class="smallBtn primary" id="listenBtn">🎙️ Słuchaj</button>
+        <button class="smallBtn" id="speakBtn">🔊 Mów</button>
+        <button class="smallBtn" id="stopBtn">⏹ Stop</button>
+      </div>
 
       <div class="chips">
         <div class="chip warn" id="modeChip">Tryb: DEMO (bez API)</div>
         <div class="chip good" id="pwaChip">PWA: …</div>
-        <div class="chip" id="verChip">Wersja: 20260223-01</div>
+        <div class="chip" id="voiceChip">Głos: …</div>
+        <div class="chip" id="verChip">Wersja: 20260223-VOICE-01</div>
       </div>
     </div>
 
@@ -248,264 +209,229 @@
         <h3>Rekomendacja</h3>
         <p class="text" id="recommendation">Tu pojawi się rekomendacja.</p>
       </div>
-
-      <div class="footerBtns">
-        <button class="ghost" id="refreshBtn">Wymuś odświeżenie</button>
-        <button class="ghost" id="clearBtn">Wyczyść</button>
-      </div>
     </div>
   </div>
 
 <script>
-/**
- * STAN — DEMO Intelligence (NO API)
- * Cel: brzmieć "jak AI": konkretnie, czasem konfrontacyjnie, bez lania wody.
- * Zasada: plan po konkretach albo odmowa.
- *
- * Avatar:
- * - domyślnie ORB
- * - jeśli localStorage.stan_owner === "1" => SEMI-HUMAN
- * - łatwe ustawienie dla Ciebie: otwórz raz link: .../#me  (ustawi owner=1 i usunie hash)
- * - przełączanie: przytrzymaj avatar 1 sekundę
- */
-
-// === 1) Wbudowane grafiki (bez GitHuba, bez plików) ===
-const ORB_DATA_URI =
-"data:image/webp;base64,UklGRnQ/AABXRUJQVlA4IGg/AADwGgCdASqAAoACPMWkJ5QAA3AA/vxX0m5mmwk6l9JXG2YbT3X0yq3qfKJ0hJZp7u6D2+2k0O7c9qJtqKc3wEw4bFqfM2xG1h7vJgQWk8p8x0gD1gB0jJ5+e4z/0p7dV0o2mYl2Wk0kGQ8qZ9p1b9l5p9vXQ9Qx0c8c8E6wS0t2hKXb0j2u5gNQ8Nf7gJr5e0p0C1bA1yJkS6jYqWwqk9V5w8w1aQpY9Q2sV6lQ0WgYVQ9q9b6j3Q4f7QfW8l3k4q9b4c2mQb0p0f0f8cQb7g7m7c2k0l0m0p0q0r0s0t0u0v0w0x0y0z0AA==";
-
-const SEMI_DATA_URI =
-"data:image/webp;base64,UklGRoQ/AABXRUJQVlA4IHg/AADwGgCdASqAAoACPMWkJ5QAA3AA/vxX0m5mXyQ2b9cJc9kqvWQj4r7h3m2k0Y1bq4t0O7c9qJtqKc3wEw4bFqfM2xG1h7vJgQWk8p8x0gD1gB0jJ5+e4z/0p7dV0o2mYl2Wk0kGQ8qZ9p1b9l5p9vXQ9Qx0c8c8E6wS0t2hKXb0j2u5gNQ8Nf7gJr5e0p0C1bA1yJkS6jYqWwqk9V5w8w1aQpY9Q2sV6lQ0WgYVQ9q9b6j3Q4f7QfW8l3k4q9b4c2mQb0p0f0f8cQb7g7m7c2k0l0m0p0q0r0s0t0u0v0w0x0y0z0AA==";
-
-// UWAGA: Te data-uri są celowo krótkie (WEBP, 640x640). Jeśli chcesz “ostrzej”, powiem jak podmienić na większe.
-
-function isStandalonePWA(){
-  return window.matchMedia("(display-mode: standalone)").matches
-      || window.navigator.standalone === true;
-}
-
-function setPwaChip(){
-  document.getElementById("pwaChip").textContent = "PWA: " + (isStandalonePWA() ? "TAK" : "NIE");
-}
-
-function getOwner(){
-  return localStorage.getItem("stan_owner") === "1";
-}
-
-function setOwner(v){
-  localStorage.setItem("stan_owner", v ? "1" : "0");
-}
-
-function setAvatar(){
-  const img = document.getElementById("avatarImg");
-  img.src = getOwner() ? SEMI_DATA_URI : ORB_DATA_URI;
-}
-
-// szybki “sekret” dla Ciebie: wejście z #me
-(function bootstrapOwner(){
-  if (location.hash && location.hash.toLowerCase().includes("me")) {
-    setOwner(true);
-    history.replaceState(null, "", location.pathname + location.search); // usuń hash
+  // ===== PWA detect =====
+  function isStandalonePWA(){
+    return window.matchMedia("(display-mode: standalone)").matches
+        || window.navigator.standalone === true;
   }
-})();
+  function setPwaChip(){
+    document.getElementById("pwaChip").textContent = "PWA: " + (isStandalonePWA() ? "TAK" : "NIE");
+  }
 
-// przełączanie avatara na hold
-(function enableHoldToggle(){
-  const box = document.getElementById("avatarBox");
-  let t = null;
+  // ===== Voice: Speech Synthesis (mówienie) =====
+  const canSpeak = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+  let speakingUtterance = null;
 
-  const start = () => {
-    t = setTimeout(() => {
-      const next = !getOwner();
-      setOwner(next);
-      setAvatar();
-      // subtelny feedback
-      document.getElementById("risk").textContent =
-        next ? "Tryb właściciela: SEMI-HUMAN aktywny (tylko na tym urządzeniu)." :
-               "Tryb publiczny: ORB aktywny (domyślny dla użytkowników).";
-      document.getElementById("analysis").textContent =
-        "Zmieniono avatar lokalnie. To nie dotyka innych użytkowników.";
-      document.getElementById("recommendation").textContent =
-        "Jeśli chcesz mieć SEMI-HUMANA zawsze: wejdź raz na stronę z końcówką /#me.";
-    }, 900);
-  };
-  const end = () => { if (t) clearTimeout(t); t = null; };
+  function speak(text){
+    if(!canSpeak){
+      document.getElementById("voiceChip").textContent = "Głos: mówienie – BRAK";
+      return;
+    }
+    window.speechSynthesis.cancel();
 
-  box.addEventListener("touchstart", start, {passive:true});
-  box.addEventListener("touchend", end, {passive:true});
-  box.addEventListener("mousedown", start);
-  box.addEventListener("mouseup", end);
-  box.addEventListener("mouseleave", end);
-})();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "pl-PL";
+    u.rate = 1.03;   // minimalnie szybciej
+    u.pitch = 0.95;  // minimalnie niżej
+    speakingUtterance = u;
 
-setPwaChip();
-setAvatar();
+    window.speechSynthesis.speak(u);
+  }
 
-// === 2) “Inteligencja” DEMO — STAN bez API ===
+  function stopAllAudio(){
+    if(canSpeak) window.speechSynthesis.cancel();
+    if(recognition) { try { recognition.stop(); } catch(e){} }
+  }
 
-function normalize(s){
-  return (s || "").toString().trim();
-}
+  // ===== Voice: Speech Recognition (słuchanie) =====
+  // Na iOS bywa niedostępne. Gdy brak – pokażemy komunikat.
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const canListen = !!SR;
+  let recognition = null;
+  let listening = false;
 
-function detectTopic(text){
-  const t = text.toLowerCase();
-  const rel = ["partner","związek","relacja","on","ona","mąż","żona","chłopak","dziewczyna","rozstanie","kłótn","zdrad"];
-  const work = ["praca","szef","firma","klient","wypalen","projekt","biznes","zarab","umowa","etat","freel"];
-  const money = ["pieniądz","dług","kredyt","rata","budżet","czynsz","oszcz","zaleg","konto"];
-  const health = ["zdrow","sen","lęk","depres","panik","psych","ból","lekarz","terap"];
-  const score = (arr)=>arr.reduce((a,w)=>a+(t.includes(w)?1:0),0);
-  const m = {rel:score(rel), work:score(work), money:score(money), health:score(health)};
-  let top = "ogólne";
-  let best = 0;
-  for (const k in m){ if(m[k]>best){best=m[k]; top=k;} }
-  return top;
-}
+  if(canListen){
+    recognition = new SR();
+    recognition.lang = "pl-PL";
+    recognition.continuous = false;
+    recognition.interimResults = true;
 
-function extractConstraints(text){
-  const t = text.toLowerCase();
-  const hits = [];
-  if (t.match(/\b(7 dni|tydzień|30 dni|miesiąc|jutro|dziś|deadline)\b/)) hits.push("czas");
-  if (t.match(/\b(pieniądz|kasa|budżet|kredyt|rata|czynsz|brak dochodu|oszczęd)\b/)) hits.push("pieniądze");
-  if (t.match(/\b(zdrow|sen|lęk|atak paniki|terapi|lekarz)\b/)) hits.push("zdrowie");
-  return [...new Set(hits)];
-}
+    recognition.onstart = () => {
+      listening = true;
+      document.getElementById("voiceChip").textContent = "Głos: słucham…";
+    };
 
-function proposeOptions(text, topic){
-  // STAN ma proponować opcje sam — ale nie “wróżenie”: są to hipotezy do potwierdzenia.
-  if (topic === "rel") {
+    recognition.onresult = (event) => {
+      let finalText = "";
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i++){
+        const txt = event.results[i][0].transcript;
+        if(event.results[i].isFinal) finalText += txt;
+        else interim += txt;
+      }
+      const box = document.getElementById("input");
+      if(finalText) box.value = (box.value ? box.value + " " : "") + finalText.trim();
+      else if(interim) {
+        // delikatny podgląd: dopisujemy w placeholder? (nie ruszamy tekstu)
+      }
+    };
+
+    recognition.onerror = () => {
+      document.getElementById("voiceChip").textContent = "Głos: słuchanie – błąd/blocked";
+      listening = false;
+    };
+
+    recognition.onend = () => {
+      listening = false;
+      document.getElementById("voiceChip").textContent = "Głos: gotowe";
+    };
+  }
+
+  // ===== STAN DEMO „inteligencja” =====
+  function normalize(s){ return (s || "").toString().trim(); }
+
+  function detectTopic(text){
+    const t = text.toLowerCase();
+    const rel = ["partner","związek","relacja","rozst","kłótn","zdrad","obraża","ucieka"];
+    const work = ["praca","szef","firma","projekt","biznes","zarab","etat","klient"];
+    const money = ["kasa","pieniądz","kredyt","rata","czynsz","dług","budżet","oszcz"];
+    const health = ["zdrow","sen","lęk","panik","depres","psych","ból","terapi"];
+    const score = (arr)=>arr.reduce((a,w)=>a+(t.includes(w)?1:0),0);
+    const m = {rel:score(rel), work:score(work), money:score(money), health:score(health)};
+    let top="ogólne", best=0;
+    for (const k in m){ if(m[k]>best){best=m[k]; top=k;} }
+    return top;
+  }
+
+  function extractConstraints(text){
+    const t=text.toLowerCase();
+    const hits=[];
+    if (t.match(/\b(7 dni|tydzień|30 dni|miesiąc|jutro|dziś|deadline)\b/)) hits.push("czas");
+    if (t.match(/\b(pieniądz|kasa|budżet|kredyt|rata|czynsz|brak dochodu|oszczęd)\b/)) hits.push("pieniądze");
+    if (t.match(/\b(zdrow|sen|lęk|atak paniki|terapi|lekarz)\b/)) hits.push("zdrowie");
+    return [...new Set(hits)];
+  }
+
+  function proposeOptions(topic){
+    if (topic==="rel") return [
+      "A) Rozmowa z ramą + granica: 1 temat, 1 prośba, 1 konsekwencja.",
+      "B) Reset: pauza 48h + spis faktów + rozmowa w neutralnym miejscu."
+    ];
+    if (topic==="work") return [
+      "A) Bezpieczny marsz: zostajesz w pracy i robisz MVP z limitem czasu.",
+      "B) Skok kontrolowany: runway 3–6 mies. → dopiero redukcja etatu/zmiana."
+    ];
+    if (topic==="money") return [
+      "A) Stabilizacja: tniesz koszty stałe, porządkujesz przepływy.",
+      "B) Ofensywa: zwiększasz przychód + plan spłat z terminami."
+    ];
+    if (topic==="health") return [
+      "A) Ulga 7 dni: sen + rutyna + redukcja bodźców.",
+      "B) Plan 30 dni: konsultacja + system (sen/ruch/wsparcie)."
+    ];
     return [
-      "A) Rozmowa z ramą i granicą: 1 temat, 1 prośba, 1 konsekwencja (jeśli ucieka/obraża się).",
-      "B) Próba resetu: pauza 48h + spisanie faktów + rozmowa w neutralnym miejscu / z mediatorem."
+      "A) Wariant bezpieczny: małe kroki + test faktów.",
+      "B) Wariant ofensywny: szybciej, ale z barierkami (limity/konsekwencje)."
     ];
   }
-  if (topic === "work") {
-    return [
-      "A) Bezpieczny marsz: zostajesz w pracy, tniesz zakres, robisz MVP po godzinach z limitem czasu.",
-      "B) Skok kontrolowany: ustalasz runway (np. 3–6 mies.), potem dopiero redukcja etatu / zmiana."
-    ];
-  }
-  if (topic === "money") {
-    return [
-      "A) Stabilizacja: minimalizujesz ryzyko, porządkujesz przepływy, tniesz koszty stałe.",
-      "B) Agresywny plan: zwiększasz przychód (dodatkowa usługa/praca) + terminowa spłata priorytetów."
-    ];
-  }
-  if (topic === "health") {
-    return [
-      "A) Szybka ulga: sen/oddech/rutyna + ograniczenie bodźców na 7 dni.",
-      "B) Trwała naprawa: konsultacja + plan 30 dni (sen, ruch, wsparcie, terapia jeśli potrzebna)."
-    ];
-  }
-  return [
-    "A) Wariant bezpieczny: minimalne ryzyko, małe kroki, szybkie sprawdzenie faktów.",
-    "B) Wariant ofensywny: szybsze działanie, ale z barierkami (limity/konsekwencje)."
-  ];
-}
 
-function stanDemo(text){
-  const topic = detectTopic(text);
-  const constraints = extractConstraints(text);
+  function stanDemo(text){
+    const topic = detectTopic(text);
+    const constraints = extractConstraints(text);
 
-  // “STAN” — ton: pomocny, konkretny, czasem dociska.
-  const opening = [
-    "Dobra. Zatrzymujemy chaos na chwilę i łapiemy fakty.",
-    "Nie będę wróżyć. Będę mierzyć.",
-    "Jeśli chcesz planu, muszę mieć minimum konkretów."
-  ].join(" ");
+    const opening = [
+      "Dobra. Zatrzymajmy chaos na chwilę i złapmy fakty.",
+      "Nie będę miła. Będę pomocna.",
+      "Plan po konkretach albo odmowa."
+    ].join(" ");
 
-  const missing = [];
-  if (text.length < 35) missing.push("opis jest za krótki");
-  if (constraints.length === 0) missing.push("brak twardych ograniczeń (czas/pieniądze/zdrowie)");
-  const needsClarify = missing.length > 0;
+    const missing=[];
+    if (text.length < 35) missing.push("opis jest za krótki");
+    if (constraints.length === 0) missing.push("brak twardych ograniczeń (czas/pieniądze/zdrowie)");
+    const needsClarify = missing.length>0;
 
-  const opt = proposeOptions(text, topic);
+    const opt = proposeOptions(topic);
 
-  let analysis = "";
-  let risk = "";
-  let recommendation = "";
+    if (needsClarify){
+      return {
+        analysis:
+          opening + "\n\n" +
+          "Widzę kierunek, ale brakuje danych: " + missing.join(", ") + ".\n" +
+          "Temat: " + (topic==="rel"?"relacja":topic==="work"?"praca/projekt":topic==="money"?"finanse":topic==="health"?"zdrowie":"decyzja ogólna") + ".",
+        risk:
+          "Ryzyko: decyzja w emocjach + interpretacja bez ram.\n" +
+          "Ocena: średnie–wysokie dopóki nie doprecyzujesz faktów.",
+        recommendation:
+          "Odpowiedz krótko:\n" +
+          "1) Twarde ograniczenia (czas/kasa/zdrowie) – 1 linia.\n" +
+          "2) Cel na 30 dni – 1 zdanie.\n\n" +
+          "Proponowane opcje (do potwierdzenia):\n" +
+          opt.map(x=>"• "+x).join("\n")
+      };
+    }
 
-  if (needsClarify){
-    analysis =
-      opening + "\n\n" +
-      "Widzę kierunek, ale brakuje mi danych: " + missing.join(", ") + ".\n" +
-      "Na teraz: wygląda to jak temat **" + (
-        topic==="rel"?"relacji":
-        topic==="work"?"pracy/projektu":
-        topic==="money"?"finansów":
-        topic==="health"?"zdrowia/psychy":"decyzji ogólnej"
-      ) + "**.";
-
-    risk =
-      "Ryzyko błędnej decyzji rośnie, gdy działasz w emocjach i bez ram.\n" +
-      "Ocena: **średnie–wysokie**, dopóki nie doprecyzujemy faktów.";
-
-    recommendation =
-      "Nie dam Ci “planu z dupy”. Najpierw odpowiedz krótko:\n" +
-      "1) Jakie masz twarde ograniczenia (czas / kasa / zdrowie)?\n" +
-      "2) Co jest Twoim celem w 30 dni (jedno zdanie)?\n\n" +
-      "Moje hipotezy opcji (do potwierdzenia):\n" +
-      opt.map(x=>"• "+x).join("\n");
-  } else {
-    analysis =
-      opening + "\n\n" +
-      "Temat: **" + (
-        topic==="rel"?"relacja":
-        topic==="work"?"praca/projekt":
-        topic==="money"?"finanse":
-        topic==="health"?"zdrowie":"ogólne"
-      ) + "**.\n" +
-      "Ograniczenia widoczne w tekście: " + constraints.join(", ") + ".\n" +
-      "W skrócie: masz napięcie między bezpieczeństwem a potrzebą zmiany. To normalne. Problemem nie jest lęk — problemem jest brak ram decyzyjnych.";
-
-    risk =
-      "Ryzyko #1: decyzja w szczycie emocji.\n" +
-      "Ryzyko #2: przeciąganie = też decyzja (tylko ukryta).\n" +
-      "Ocena: **średnie** — do zbicia przez prostą strukturę.";
-
-    recommendation =
-      "Bierzemy 2 opcje i robimy test w rzeczywistości.\n\n" +
-      "Opcje (moja propozycja):\n" + opt.map(x=>"• "+x).join("\n") + "\n\n" +
-      "Teraz wybór: **A czy B**? (jedna litera).\n" +
-      "Jeśli nie umiesz wybrać: podaj, czego bardziej boisz się stracić (1 zdanie).";
+    return {
+      analysis:
+        opening + "\n\n" +
+        "Ograniczenia wykryte: " + constraints.join(", ") + ".\n" +
+        "Masz napięcie między bezpieczeństwem a zmianą. Normalne.\n" +
+        "Twoim problemem nie jest lęk. Problemem jest brak struktury decyzji.",
+      risk:
+        "Ryzyko #1: decyzja w szczycie emocji.\n" +
+        "Ryzyko #2: przeciąganie = też decyzja.\n" +
+        "Ocena: średnie — da się zbić ramą.",
+      recommendation:
+        "Wybieramy jedną opcję i testujemy w rzeczywistości.\n\n" +
+        "Opcje:\n" + opt.map(x=>"• "+x).join("\n") + "\n\n" +
+        "Teraz wybór: A czy B? (jedna litera).\n" +
+        "Jeśli nie umiesz: napisz, czego bardziej boisz się stracić (1 zdanie)."
+    };
   }
 
-  // bez markdown w UI — ale spokojnie, to Twój front, może być.
-  return { analysis, risk, recommendation };
-}
+  async function run(){
+    const text = normalize(document.getElementById("input").value);
+    const out = stanDemo(text);
+    document.getElementById("analysis").textContent = out.analysis;
+    document.getElementById("risk").textContent = out.risk;
+    document.getElementById("recommendation").textContent = out.recommendation;
 
-// === 3) UI wiring ===
-async function run(){
-  const text = normalize(document.getElementById("input").value);
-  const out = stanDemo(text);
+    // auto-mówienie (opcjonalne): STAN mówi rekomendację
+    speak(out.recommendation);
+  }
 
-  document.getElementById("analysis").textContent = out.analysis;
-  document.getElementById("risk").textContent = out.risk;
-  document.getElementById("recommendation").textContent = out.recommendation;
+  document.getElementById("analyzeBtn").addEventListener("click", run);
 
-  // lekkie “feels like AI”: subtelna zmiana akcentu po analizie
-  const btn = document.getElementById("analyzeBtn");
-  btn.style.background = "linear-gradient(90deg, #7B5CFF, #B256FF)";
-}
+  document.getElementById("listenBtn").addEventListener("click", ()=>{
+    if(!canListen){
+      document.getElementById("voiceChip").textContent =
+        "Głos: słuchanie – BRAK (iOS PWA często blokuje). Użyj dyktowania klawiatury.";
+      return;
+    }
+    if(listening){ try{ recognition.stop(); }catch(e){} return; }
+    try{ recognition.start(); }catch(e){
+      document.getElementById("voiceChip").textContent = "Głos: słuchanie – nie mogę uruchomić";
+    }
+  });
 
-document.getElementById("analyzeBtn").addEventListener("click", run);
+  document.getElementById("speakBtn").addEventListener("click", ()=>{
+    const t = [
+      document.getElementById("analysis").textContent,
+      document.getElementById("risk").textContent,
+      document.getElementById("recommendation").textContent
+    ].join("\n\n");
+    speak(t);
+  });
 
-document.getElementById("clearBtn").addEventListener("click", ()=>{
-  document.getElementById("input").value = "";
-  document.getElementById("analysis").textContent = "Tu pojawi się analiza.";
-  document.getElementById("risk").textContent = "Tu pojawi się ocena ryzyka.";
-  document.getElementById("recommendation").textContent = "Tu pojawi się rekomendacja.";
-});
+  document.getElementById("stopBtn").addEventListener("click", stopAllAudio);
 
-document.getElementById("refreshBtn").addEventListener("click", ()=>{
-  // PWA na iOS bywa agresywna z cache — tu robimy “twardy” reload
-  location.reload(true);
-});
-
-// odśwież PWA chip przy powrocie
-window.addEventListener("visibilitychange", ()=>{ setPwaChip(); });
-
-// start
-setPwaChip();
-setAvatar();
+  // init
+  setPwaChip();
+  document.getElementById("voiceChip").textContent =
+    "Głos: " + (canListen ? "słuchanie+ mówienie" : (canSpeak ? "mówienie" : "brak"));
 </script>
 </body>
 </html>
