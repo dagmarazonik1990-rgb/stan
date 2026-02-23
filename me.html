@@ -2,287 +2,605 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>STAN</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>STAN • ME</title>
 
-  <meta name="theme-color" content="#0B0F1A" />
+  <!-- osobny manifest dla Ciebie -->
   <link rel="manifest" href="manifest-me.json" />
 
-  <!-- iOS PWA -->
+  <meta name="theme-color" content="#0B0F1A" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="STAN" />
-
-  <!-- UWAGA: tu jest Twoja ikona -->
-  <link rel="apple-touch-icon" href="icon-192-semi.png" />
 
   <style>
-    /* minimalnie skrócone: styl jak w index.html */
     :root{
-      --bg:#070A12; --bg2:#0B0F1A;
-      --stroke: rgba(255,255,255,0.10);
-      --text:#EAF0FF; --muted2: rgba(234,240,255,0.55);
-      --a1:#7B5CFF; --a2:#B256FF;
-      --r: 22px;
-      --shadow: 0 18px 60px rgba(0,0,0,0.45);
+      --bg:#070A12;
+      --panel: rgba(18, 22, 40, .52);
+      --panel2: rgba(18, 22, 40, .36);
+      --stroke: rgba(255,255,255,.10);
+      --stroke2: rgba(255,255,255,.14);
+      --text:#E9ECF6;
+      --muted: rgba(233,236,246,.66);
+
+      --violet:#8C5CFF;
+      --violet2:#B66BFF;
+      --cyan:#58C7FF;
+
+      --radius: 22px;
+      --shadow: 0 18px 55px rgba(0,0,0,.55);
     }
-    *{ box-sizing:border-box; }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
     body{
-      margin:0; color:var(--text);
+      margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color:var(--text);
       background:
-        radial-gradient(1200px 700px at 65% 18%, rgba(123,92,255,0.23), transparent 55%),
-        radial-gradient(900px 520px at 22% 70%, rgba(178,86,255,0.16), transparent 60%),
-        linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
-      padding: 22px 16px 40px;
-      padding-top: max(22px, env(safe-area-inset-top));
-      padding-bottom: max(40px, env(safe-area-inset-bottom));
+        radial-gradient(1100px 700px at 20% -10%, rgba(140,92,255,.22), transparent 55%),
+        radial-gradient(900px 600px at 85% 15%, rgba(88,199,255,.12), transparent 55%),
+        radial-gradient(900px 900px at 50% 110%, rgba(182,107,255,.10), transparent 60%),
+        linear-gradient(180deg, #050711, #070A12 35%, #060915);
+      padding: max(18px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom));
     }
-    .wrap{ max-width:560px; margin:0 auto; }
-    .title{ font-size:56px; line-height:0.95; font-weight:800; margin:10px 0 8px; }
-    .subtitle{ margin:0 0 18px; color:var(--muted2); font-size:18px; }
-    .hero{
-      border-radius: var(--r);
-      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+
+    .wrap{
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .brand{
+      margin-top: 6px;
+      margin-bottom: 12px;
+    }
+    .brand h1{
+      margin:0;
+      font-size: 56px;
+      letter-spacing: .8px;
+      line-height: 1.02;
+      font-weight: 800;
+    }
+    .brand .sub{
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 18px;
+      letter-spacing:.2px;
+    }
+
+    .card{
+      background: var(--panel);
       border: 1px solid var(--stroke);
+      border-radius: var(--radius);
       box-shadow: var(--shadow);
-      overflow: hidden;
-      padding: 16px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
     }
-    .avatarBox{
-      width:100%;
-      aspect-ratio: 1 / 1;
-      border-radius: calc(var(--r) - 6px);
-      border: 1px solid rgba(255,255,255,0.12);
-      background:
-        radial-gradient(650px 420px at 50% 40%, rgba(123,92,255,0.22), rgba(0,0,0,0) 55%),
-        radial-gradient(800px 520px at 50% 110%, rgba(178,86,255,0.14), rgba(0,0,0,0) 60%),
-        rgba(0,0,0,0.22);
-      display:flex; align-items:center; justify-content:center;
-      overflow:hidden;
-      margin-bottom:14px;
-    }
-    .semi{
-      width:72%; aspect-ratio:1/1;
-      border-radius: 26px;
+
+    .avatarCard{
       position: relative;
-      background:
-        radial-gradient(circle at 50% 20%, rgba(255,255,255,0.10), rgba(0,0,0,0) 40%),
-        radial-gradient(circle at 50% 60%, rgba(123,92,255,0.22), rgba(0,0,0,0) 70%),
-        rgba(0,0,0,0.18);
-      border: 1px solid rgba(255,255,255,0.12);
-      box-shadow:
-        0 0 90px rgba(178,86,255,0.20),
-        inset 0 0 30px rgba(255,255,255,0.08);
-      overflow:hidden;
+      overflow: hidden;
+      padding: 18px 16px 12px;
+      margin-top: 18px;
     }
-    .semi .head{
-      position:absolute; left:50%; top:10%;
-      width:42%; height:42%;
-      transform: translateX(-50%);
+    .avatarHeader{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom: 14px;
+    }
+    .avatarHeader .title{
+      font-weight:700;
+      color: rgba(233,236,246,.82);
+      letter-spacing:.2px;
+    }
+    .pill{
+      font-size: 12px;
+      color: rgba(233,236,246,.78);
+      padding: 8px 10px;
       border-radius: 999px;
-      background:
-        radial-gradient(circle at 50% 35%, rgba(255,255,255,0.22), rgba(255,255,255,0.04) 30%, rgba(0,0,0,0) 55%),
-        radial-gradient(circle at 50% 50%, rgba(178,86,255,0.20), rgba(0,0,0,0) 70%),
-        rgba(10,12,20,0.85);
-      border: 1px solid rgba(255,255,255,0.10);
-    }
-    .semi .eyes{
-      position:absolute; left:50%; top:28%;
-      width:52%; height:10%;
-      transform: translateX(-50%);
-      display:flex; gap:18%;
-      justify-content:center; align-items:center;
-    }
-    .semi .eye{
-      width:14%; height:26%;
-      border-radius:999px;
-      background: rgba(120,210,255,0.85);
-      box-shadow: 0 0 18px rgba(120,210,255,0.75);
-    }
-    .semi .torso{
-      position:absolute; left:50%; top:44%;
-      width:64%; height:58%;
-      transform: translateX(-50%);
-      border-radius: 26px 26px 34px 34px;
-      background:
-        radial-gradient(circle at 50% 20%, rgba(178,86,255,0.18), rgba(0,0,0,0) 50%),
-        rgba(8,10,16,0.78);
-      border: 1px solid rgba(255,255,255,0.10);
-    }
-    .semi .core{
-      position:absolute; left:50%; top:62%;
-      width:9%; height:9%;
-      transform: translate(-50%,-50%);
-      border-radius: 6px;
-      background: rgba(120,210,255,0.85);
-      box-shadow: 0 0 20px rgba(120,210,255,0.75);
+      background: rgba(0,0,0,.20);
+      border: 1px solid rgba(255,255,255,.10);
+      white-space: nowrap;
     }
 
+    .avatarStage{
+      position: relative;
+      border-radius: 18px;
+      border: 1px solid var(--stroke2);
+      background:
+        radial-gradient(420px 280px at 50% 30%, rgba(182,107,255,.20), transparent 65%),
+        radial-gradient(420px 320px at 50% 70%, rgba(88,199,255,.12), transparent 70%),
+        rgba(0,0,0,.16);
+      overflow:hidden;
+      height: 320px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+      user-select:none;
+      -webkit-user-select:none;
+    }
+
+    /* premium glow layer */
+    .avatarStage::before{
+      content:"";
+      position:absolute; inset:-80px;
+      background:
+        radial-gradient(400px 260px at 50% 35%, rgba(140,92,255,.38), transparent 60%),
+        radial-gradient(320px 220px at 35% 65%, rgba(88,199,255,.22), transparent 65%),
+        radial-gradient(340px 240px at 70% 70%, rgba(182,107,255,.18), transparent 70%);
+      filter: blur(18px);
+      opacity:.8;
+      pointer-events:none;
+      animation: drift 8s ease-in-out infinite;
+    }
+    @keyframes drift{
+      0%,100%{transform: translate3d(0,0,0) scale(1)}
+      50%{transform: translate3d(10px,-8px,0) scale(1.02)}
+    }
+
+    .semiSvg{
+      position: relative;
+      width: 82%;
+      max-width: 420px;
+      height: auto;
+      transform: translateZ(0);
+      filter: drop-shadow(0 18px 45px rgba(0,0,0,.55));
+      animation: floaty 4.8s ease-in-out infinite;
+    }
+    @keyframes floaty{
+      0%,100%{transform: translateY(0)}
+      50%{transform: translateY(-6px)}
+    }
+
+    .inputCard{
+      margin-top: 16px;
+      padding: 14px;
+    }
     textarea{
-      width:100%; min-height:112px; resize: vertical;
-      border-radius:18px; border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(0,0,0,0.22);
-      color: var(--text); padding: 14px;
-      font-size: 16px; line-height: 1.35;
+      width:100%;
+      min-height: 130px;
+      resize: vertical;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      padding: 14px 14px;
       outline: none;
+      font-size: 16px;
+      line-height: 1.35;
     }
-    textarea::placeholder{ color: rgba(234,240,255,0.45); }
+    textarea::placeholder{color: rgba(233,236,246,.45)}
 
+    .actions{
+      display:flex;
+      gap:10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
     .btn{
-      width:100%; margin-top:12px;
-      border:none; border-radius:18px;
-      padding:16px 18px;
-      font-size:20px; font-weight:800; color:white;
-      background: linear-gradient(90deg, var(--a1), var(--a2));
-      box-shadow: 0 18px 50px rgba(123,92,255,0.22);
-      cursor:pointer;
+      appearance:none;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-weight: 700;
+      letter-spacing: .2px;
+      cursor: pointer;
     }
-    .row{ display:flex; gap:10px; margin-top:10px; }
-    .smallBtn{
-      flex:1;
-      border-radius:16px;
-      padding:12px 14px;
-      background: rgba(0,0,0,0.18);
-      border: 1px solid rgba(255,255,255,0.10);
-      color: rgba(234,240,255,0.85);
-      font-weight:800;
-      cursor:pointer;
+    .btnPrimary{
+      flex: 1;
+      min-width: 160px;
+      background: linear-gradient(90deg, rgba(140,92,255,.95), rgba(182,107,255,.92));
+      border-color: rgba(255,255,255,.14);
+      box-shadow: 0 16px 40px rgba(140,92,255,.25);
     }
-    .smallBtn.primary{
-      background: linear-gradient(90deg, rgba(123,92,255,0.40), rgba(178,86,255,0.35));
-      border-color: rgba(255,255,255,0.14);
+    .btnSmall{
+      font-weight: 700;
+      padding: 12px 12px;
+    }
+
+    .statusRow{
+      display:flex;
+      gap:10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .resultGrid{
+      margin-top: 14px;
+      display:grid;
+      gap: 12px;
+    }
+
+    .resultCard{
+      padding: 16px;
+      background: var(--panel2);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+    }
+    .resultTitle{
+      font-size: 28px;
+      font-weight: 800;
+      margin: 0 0 8px 0;
+      letter-spacing: .2px;
+    }
+    .resultText{
+      margin:0;
+      color: rgba(233,236,246,.78);
+      font-size: 16px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
+    .hint{
+      margin-top: 10px;
+      color: rgba(233,236,246,.55);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .danger{
+      color: rgba(255,140,140,.9);
     }
   </style>
 </head>
 
 <body>
   <div class="wrap">
-    <div class="title">STAN</div>
-    <div class="subtitle">Agent decyzyjny AI</div>
+    <div class="brand">
+      <h1>STAN</h1>
+      <div class="sub">Agent decyzyjny AI • wersja ME (semi-human)</div>
+    </div>
 
-    <div class="hero">
-      <div class="avatarBox">
-        <div class="semi" aria-label="STAN semi-human">
-          <div class="head"></div>
-          <div class="eyes"><div class="eye"></div><div class="eye"></div></div>
-          <div class="torso"></div>
-          <div class="core"></div>
-        </div>
+    <div class="card avatarCard">
+      <div class="avatarHeader">
+        <div class="title">STAN avatar (premium)</div>
+        <div class="pill">Dla Ciebie: Semi-human</div>
       </div>
 
+      <div class="avatarStage" id="avatarStage" title="To jest Twój premium avatar.">
+        <!-- Premium semi-human SVG (bez plików w repo) -->
+        <svg class="semiSvg" viewBox="0 0 700 700" xmlns="http://www.w3.org/2000/svg" aria-label="STAN Semi-human">
+          <defs>
+            <radialGradient id="bgGlow" cx="50%" cy="35%" r="70%">
+              <stop offset="0%" stop-color="#B66BFF" stop-opacity=".55"/>
+              <stop offset="45%" stop-color="#8C5CFF" stop-opacity=".22"/>
+              <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+            </radialGradient>
+
+            <linearGradient id="shell" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#14172A"/>
+              <stop offset="45%" stop-color="#0C1020"/>
+              <stop offset="100%" stop-color="#070A14"/>
+            </linearGradient>
+
+            <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#B66BFF" stop-opacity=".95"/>
+              <stop offset="60%" stop-color="#58C7FF" stop-opacity=".75"/>
+              <stop offset="100%" stop-color="#8C5CFF" stop-opacity=".85"/>
+            </linearGradient>
+
+            <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="2.4" result="blur"/>
+              <feColorMatrix in="blur" type="matrix"
+                values="1 0 0 0 0
+                        0 1 0 0 0
+                        0 0 1 0 0
+                        0 0 0 0.65 0" />
+            </filter>
+
+            <filter id="neon" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="6" result="b"/>
+              <feColorMatrix in="b" type="matrix"
+                values="1 0 0 0 0
+                        0 1 0 0 0
+                        0 0 1 0 0
+                        0 0 0 0.95 0" />
+            </filter>
+          </defs>
+
+          <!-- aura -->
+          <circle cx="350" cy="300" r="260" fill="url(#bgGlow)"/>
+
+          <!-- head -->
+          <path d="M350 120
+                   C250 120 205 205 205 285
+                   C205 365 250 440 350 440
+                   C450 440 495 365 495 285
+                   C495 205 450 120 350 120Z"
+                fill="url(#shell)" stroke="url(#rim)" stroke-width="5" opacity=".98"/>
+
+          <!-- neck + shoulders -->
+          <path d="M290 420
+                   C300 480 310 520 350 550
+                   C390 520 400 480 410 420
+                   C450 430 520 480 540 610
+                   C480 640 410 660 350 660
+                   C290 660 220 640 160 610
+                   C180 480 250 430 290 420Z"
+                fill="url(#shell)" stroke="rgba(255,255,255,.08)" stroke-width="2"/>
+
+          <!-- collar light -->
+          <path d="M310 520
+                   C320 560 330 590 350 612
+                   C370 590 380 560 390 520"
+                fill="none" stroke="rgba(182,107,255,.55)" stroke-width="6" filter="url(#soft)"/>
+
+          <!-- eyes (neon) -->
+          <g filter="url(#neon)">
+            <path d="M265 290 C295 265 330 265 360 290
+                     C330 305 295 305 265 290Z"
+                  fill="#58C7FF" opacity=".95"/>
+            <path d="M340 290 C370 265 405 265 435 290
+                     C405 305 370 305 340 290Z"
+                  fill="#58C7FF" opacity=".95"/>
+          </g>
+
+          <!-- eyes inner -->
+          <path d="M275 290 C300 273 325 273 350 290
+                   C325 298 300 298 275 290Z"
+                fill="#EFFFFF" opacity=".45"/>
+          <path d="M350 290 C375 273 400 273 425 290
+                   C400 298 375 298 350 290Z"
+                fill="#EFFFFF" opacity=".45"/>
+
+          <!-- face highlights -->
+          <path d="M350 155
+                   C305 165 275 205 270 245
+                   C290 220 315 205 350 198
+                   C385 205 410 220 430 245
+                   C425 205 395 165 350 155Z"
+                fill="rgba(255,255,255,.06)"/>
+
+          <!-- core chip -->
+          <rect x="332" y="515" width="36" height="36" rx="8" fill="#58C7FF" opacity=".95" filter="url(#neon)"/>
+          <rect x="338" y="521" width="24" height="24" rx="6" fill="#EFFFFF" opacity=".30"/>
+
+          <!-- subtle scan line -->
+          <rect x="120" y="290" width="460" height="2" fill="rgba(182,107,255,.25)">
+            <animate attributeName="y" values="240;330;240" dur="3.6s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values=".10;.35;.10" dur="3.6s" repeatCount="indefinite"/>
+          </rect>
+
+        </svg>
+      </div>
+
+      <div class="hint">
+        Tip: jeśli chcesz „bardziej surowy STAN”, to on będzie dopytywał i dociskał niekonkretność — ale bez chamstwa.
+      </div>
+    </div>
+
+    <div class="card inputCard">
       <textarea id="input" placeholder="Opisz sytuację. Co się stało? Co chcesz osiągnąć? Jakie masz ograniczenia?"></textarea>
-      <button class="btn" id="analyzeBtn">Analiza →</button>
 
-      <div class="row">
-        <button class="smallBtn primary" id="listenBtn">🎙️ Słuchaj</button>
-        <button class="smallBtn" id="speakBtn">🔊 Mów</button>
-        <button class="smallBtn" id="stopBtn">⏹ Stop</button>
+      <div class="actions">
+        <button class="btn btnPrimary" id="analyzeBtn">Analiza →</button>
+        <button class="btn btnSmall" id="listenBtn">🎙️ Słuchaj</button>
+        <button class="btn btnSmall" id="speakBtn">🔊 Odczytaj</button>
+        <button class="btn btnSmall" id="clearBtn">Wyczyść</button>
+      </div>
+
+      <div class="statusRow">
+        <span class="pill">Tryb: DEMO (bez API)</span>
+        <span class="pill">Avatar: Semi-human</span>
+        <span class="pill" id="voiceSupport">Głos: sprawdzam…</span>
       </div>
     </div>
 
-    <div style="height:14px"></div>
+    <div class="resultGrid">
+      <div class="resultCard">
+        <div class="resultTitle">Analiza</div>
+        <p class="resultText" id="analysis">Tu pojawi się analiza.</p>
+      </div>
 
-    <div class="hero">
-      <div style="font-size:34px;font-weight:800;margin-bottom:8px">Analiza</div>
-      <div id="analysis" style="white-space:pre-wrap; color:rgba(234,240,255,0.74)">Tu pojawi się analiza.</div>
-    </div>
+      <div class="resultCard">
+        <div class="resultTitle">Ryzyko</div>
+        <p class="resultText" id="risk">Tu pojawi się ocena ryzyka.</p>
+      </div>
 
-    <div style="height:12px"></div>
-
-    <div class="hero">
-      <div style="font-size:34px;font-weight:800;margin-bottom:8px">Ryzyko</div>
-      <div id="risk" style="white-space:pre-wrap; color:rgba(234,240,255,0.74)">Tu pojawi się ocena ryzyka.</div>
-    </div>
-
-    <div style="height:12px"></div>
-
-    <div class="hero">
-      <div style="font-size:34px;font-weight:800;margin-bottom:8px">Rekomendacja</div>
-      <div id="recommendation" style="white-space:pre-wrap; color:rgba(234,240,255,0.74)">Tu pojawi się rekomendacja.</div>
+      <div class="resultCard">
+        <div class="resultTitle">Rekomendacja</div>
+        <p class="resultText" id="recommendation">Tu pojawi się rekomendacja.</p>
+      </div>
     </div>
   </div>
 
 <script>
-  // ===== Speech synthesis (mówienie) =====
-  const canSpeak = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
-  function speak(text){
-    if(!canSpeak) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang="pl-PL"; u.rate=1.03; u.pitch=0.95;
-    window.speechSynthesis.speak(u);
-  }
-  function stopAllAudio(){
-    if(canSpeak) window.speechSynthesis.cancel();
-    if(recognition) { try{ recognition.stop(); }catch(e){} }
+  // ---------- DEMO "inteligencja" (bez API) ----------
+  // STAN: nie jest miły. Jest pomocny. Dopytuje. Dociska konkrety. Plan po konkretach lub odmowa.
+  function normalize(s){
+    return String(s || "").replace(/\s+/g," ").trim();
   }
 
-  // ===== Speech recognition (słuchanie) =====
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const canListen = !!SR;
-  let recognition = null;
-  let listening = false;
-
-  if(canListen){
-    recognition = new SR();
-    recognition.lang="pl-PL";
-    recognition.continuous=false;
-    recognition.interimResults=true;
-    recognition.onstart=()=>{ listening=true; };
-    recognition.onresult=(e)=>{
-      let finalText="";
-      for(let i=e.resultIndex;i<e.results.length;i++){
-        const txt=e.results[i][0].transcript;
-        if(e.results[i].isFinal) finalText += txt;
-      }
-      if(finalText){
-        const box=document.getElementById("input");
-        box.value = (box.value?box.value+" ":"") + finalText.trim();
-      }
-    };
-    recognition.onend=()=>{ listening=false; };
-    recognition.onerror=()=>{ listening=false; };
+  function hasAny(text, arr){
+    const t = text.toLowerCase();
+    return arr.some(k => t.includes(k));
   }
 
-  // ===== STAN demo =====
-  function normalize(s){ return (s||"").toString().trim(); }
   function stanDemo(text){
-    const opening = "Dobra. Zatrzymajmy chaos. Nie będę miła. Będę pomocna. Plan po konkretach albo odmowa.";
-    if(text.length < 35){
+    const opening =
+`Dobra. Zatrzymajmy chaos na chwilę i złapmy fakty.
+Nie będę wróżyć. Będę mierzyć.`;
+
+    // Za mało danych → dopytka, bez planu
+    if(text.length < 40){
       return {
-        analysis: opening + "\n\nMasz za mało danych. To nie jest rozmowa — to jest decyzja.",
-        risk: "Ryzyko: zgadywanie + emocje. Ocena: wysokie.",
-        recommendation: "Dopisz 2 rzeczy:\n1) Cel (1 zdanie).\n2) Ograniczenia (czas/kasa/zdrowie).\nPotem dostaniesz plan."
+        analysis: opening + `\n\nMasz za mało danych, żebym dał plan bez lania wody.`,
+        risk: `Ryzyko: zgadywanie + emocje → wysokie.`,
+        recommendation:
+`Dopisz 3 rzeczy (krótko, konkretnie):
+1) Cel: co ma się stać po tej decyzji?
+2) Ograniczenia: czas / kasa / zdrowie / ryzyko (twarde limity).
+3) Opcje: co REALNIE możesz zrobić w 48h (A/B/C)?`
       };
     }
-    return {
-      analysis: opening + "\n\nWidzę konflikt między tym, co czujesz, a tym, co jest realne do zrobienia. To normalne. Teraz: struktura.",
-      risk: "Ryzyko #1: reakcja w szczycie emocji.\nRyzyko #2: brak ram = chaos.\nOcena: średnie.",
-      recommendation:
-        "Wybór jest binarny.\nA) Idziesz w spokój i ramę.\nB) Idziesz w konfrontację i konsekwencje.\n\nWybierz A/B. Jeśli nie umiesz: napisz, czego najbardziej boisz się stracić."
-    };
+
+    const rel = hasAny(text, ["partner", "związek", "relacja", "obraża", "ucieka", "kłótnia"]);
+    const work = hasAny(text, ["praca", "szef", "firma", "projekt", "biznes", "dochód", "pieniądze"]);
+    const emotionHigh = hasAny(text, ["wkur", "wkurwia", "nienawidzę", "mam dość", "rozbita", "panika", "boję", "boje"]);
+
+    let analysis = opening + "\n\n";
+    if(rel) analysis += "Widzę konflikt relacyjny i problem komunikacji/bezpieczeństwa emocjonalnego.\n";
+    if(work) analysis += "Widzę wątek decyzyjny: stabilność vs ryzyko/tempo.\n";
+    if(!rel && !work) analysis += "To wygląda na temat decyzyjny ogólny: priorytety → konsekwencje → plan.\n";
+
+    analysis += "Brakuje mi twardych danych: opcji, ograniczeń, stawki.\nNie kończę na skróty — dopytam.";
+
+    let risk = "Ryzyko decyzji impulsywnej / błędnej interpretacji: ";
+    risk += emotionHigh ? "wysokie (emocje na froncie)." : "średnie (brak pełnych danych).";
+
+    // STAN sam proponuje opcje (Twoje życzenie)
+    let proposed = [];
+    if(rel){
+      proposed = [
+        "A) Rozmowa na faktach (konkretne zachowania → konkretne granice → konsekwencje).",
+        "B) Pauza/odstęp 24–72h i rozmowa dopiero przy spokojnym układzie nerwowym.",
+        "C) Jeśli granice są łamane: plan wyjścia / zabezpieczenie siebie (emocjonalnie i logistycznie)."
+      ];
+    } else if(work){
+      proposed = [
+        "A) Bezpieczny tryb: zostajesz w pracy + budujesz projekt 30–60 min dziennie (metodycznie).",
+        "B) Hybryda: negocjujesz mniejsze godziny / freelans, kupujesz czas na projekt.",
+        "C) Skok: odcinasz etat dopiero, gdy masz X miesięcy bufora i 1 kanał sprzedaży."
+      ];
+    } else {
+      proposed = [
+        "A) Zatrzymanie i spis opcji (max 3) + kryteria wyboru.",
+        "B) Mały eksperyment 7 dni zamiast wielkiej deklaracji.",
+        "C) Jeśli brak danych: najpierw zbierasz dane, potem decyzja."
+      ];
+    }
+
+    const recommendation =
+`Najpierw rozdziel emocję od decyzji.
+Twoje opcje (propozycja STANa):
+${proposed.map(x=>"• "+x).join("\n")}
+
+Teraz odpowiedz krótko:
+1) Twoje twarde ograniczenia (czas/kasa/zdrowie) w 1 zdaniu.
+2) Która opcja jest realna w 48h (A/B/C)?
+Wtedy dam Ci plan na 7 dni i 30 dni — bez lania wody.`;
+
+    return { analysis, risk, recommendation };
   }
 
+  // ---------- UI ----------
+  const input = document.getElementById("input");
+  const analysisEl = document.getElementById("analysis");
+  const riskEl = document.getElementById("risk");
+  const recEl = document.getElementById("recommendation");
+
+  const analyzeBtn = document.getElementById("analyzeBtn");
+  const listenBtn = document.getElementById("listenBtn");
+  const speakBtn = document.getElementById("speakBtn");
+  const clearBtn = document.getElementById("clearBtn");
+  const voiceSupport = document.getElementById("voiceSupport");
+
   function run(){
-    const text = normalize(document.getElementById("input").value);
+    const text = normalize(input.value);
     const out = stanDemo(text);
-    analysis.textContent = out.analysis;
-    risk.textContent = out.risk;
-    recommendation.textContent = out.recommendation;
+    analysisEl.textContent = out.analysis;
+    riskEl.textContent = out.risk;
+    recEl.textContent = out.recommendation;
     speak(out.recommendation);
   }
 
   analyzeBtn.addEventListener("click", run);
-  listenBtn.addEventListener("click", ()=>{
-    if(!canListen){ alert("Słuchanie jest zablokowane / niedostępne w tej przeglądarce iOS. Użyj dyktowania klawiatury."); return; }
-    if(listening){ try{ recognition.stop(); }catch(e){} return; }
-    try{ recognition.start(); }catch(e){ alert("Nie mogę uruchomić nasłuchu."); }
+  clearBtn.addEventListener("click", ()=>{
+    input.value = "";
+    analysisEl.textContent = "Tu pojawi się analiza.";
+    riskEl.textContent = "Tu pojawi się ocena ryzyka.";
+    recEl.textContent = "Tu pojawi się rekomendacja.";
   });
+
+  // ---------- MÓWIENIE (TTS) ----------
+  function speak(text){
+    try{
+      if(!("speechSynthesis" in window)) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(String(text || ""));
+      u.lang = "pl-PL";
+      u.rate = 1.0;
+      u.pitch = 1.0;
+      window.speechSynthesis.speak(u);
+    }catch(e){}
+  }
+
   speakBtn.addEventListener("click", ()=>{
-    speak([analysis.textContent, risk.textContent, recommendation.textContent].join("\n\n"));
+    const all = [analysisEl.textContent, riskEl.textContent, recEl.textContent].join("\n\n");
+    speak(all);
   });
-  stopBtn.addEventListener("click", stopAllAudio);
+
+  // ---------- SŁUCHANIE (SpeechRecognition jeśli jest, inaczej dyktowanie iOS) ----------
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  let listening = false;
+
+  function setupRecognition(){
+    if(!SpeechRecognition) return false;
+    recognition = new SpeechRecognition();
+    recognition.lang = "pl-PL";
+    recognition.interimResults = true;
+    recognition.continuous = false;
+
+    recognition.onresult = (event)=>{
+      let finalText = "";
+      let interim = "";
+      for(const res of event.results){
+        if(res.isFinal) finalText += res[0].transcript;
+        else interim += res[0].transcript;
+      }
+      // wpisuj na żywo
+      const base = input.value.replace(/\s+$/,"");
+      input.value = (base ? base + " " : "") + (finalText || interim);
+    };
+
+    recognition.onend = ()=>{
+      listening = false;
+      listenBtn.textContent = "🎙️ Słuchaj";
+    };
+
+    recognition.onerror = ()=>{
+      listening = false;
+      listenBtn.textContent = "🎙️ Słuchaj";
+      alert("Słuchanie głosowe nie zadziałało tutaj. Na iPhonie użyj dyktowania z klawiatury (mikrofon przy spacji).");
+    };
+
+    return true;
+  }
+
+  const canListen = setupRecognition();
+  const canSpeak = ("speechSynthesis" in window);
+  voiceSupport.textContent = `Głos: ${canSpeak ? "mówi" : "brak TTS"} / ${canListen ? "słucha" : "słuchanie: dyktowanie iOS"}`;
+
+  listenBtn.addEventListener("click", ()=>{
+    if(canListen && recognition){
+      if(listening){
+        try{ recognition.stop(); }catch(e){}
+        listening = false;
+        listenBtn.textContent = "🎙️ Słuchaj";
+        return;
+      }
+      // iOS/Safari wymaga gestu użytkownika — klik jest OK
+      listening = true;
+      listenBtn.textContent = "⏹ Stop";
+      try{ recognition.start(); }catch(e){
+        listening = false;
+        listenBtn.textContent = "🎙️ Słuchaj";
+        alert("Nie mogę uruchomić słuchania. Użyj dyktowania z klawiatury iOS (mikrofon przy spacji).");
+      }
+    } else {
+      // fallback bez API
+      input.focus();
+      alert("iOS często blokuje SpeechRecognition. Użyj dyktowania: przytrzymaj mikrofon na klawiaturze (spacja) i mów — STAN to przyjmie jako tekst.");
+    }
+  });
+
 </script>
 </body>
 </html>
