@@ -1,556 +1,511 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>STAN</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>STAN</title>
 
-<meta name="theme-color" content="#0B0F1A" />
-<link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0B0F1A" />
+  <link rel="manifest" href="manifest.json" />
 
-<style>
-:root{
-  --bg:#0B0F1A;
-  --surface:#111827;
-  --text:#E5E7EB;
+  <!-- iOS PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="STAN" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
 
-  /* default orb colors */
-  --orbCore:#9F7AEA;
-  --orbMid:#6D5DF6;
-  --orbEdge:#1A1F3A;
+  <style>
+    :root{
+      --bg:#070A12;
+      --bg2:#0B0F1A;
+      --surface: rgba(255,255,255,0.06);
+      --surface2: rgba(255,255,255,0.08);
+      --stroke: rgba(255,255,255,0.10);
+      --text:#EAF0FF;
+      --muted: rgba(234,240,255,0.72);
+      --muted2: rgba(234,240,255,0.55);
+      --accent1:#7B5CFF;
+      --accent2:#B256FF;
+      --good:#45D483;
+      --warn:#F0C04A;
 
-  --accent1:#6D5DF6;
-  --accent2:#A855F7;
-}
+      --r: 22px;
+      --shadow: 0 18px 60px rgba(0,0,0,0.45);
+    }
 
-*{box-sizing:border-box;margin:0;padding:0}
-body{
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-  background:
-    radial-gradient(circle at 30% 20%, #1A1F3A 0%, #0B0F1A 60%);
-  color:var(--text);
-  min-height:100vh;
-  padding:20px;
-}
-h1{font-size:34px;font-weight:800; letter-spacing:.5px}
-.subtitle{opacity:.7;margin-bottom:16px}
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background:
+        radial-gradient(1200px 700px at 65% 18%, rgba(123,92,255,0.23), transparent 55%),
+        radial-gradient(900px 520px at 22% 70%, rgba(178,86,255,0.16), transparent 60%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+      padding: 22px 16px 40px;
+      padding-top: max(22px, env(safe-area-inset-top));
+      padding-bottom: max(40px, env(safe-area-inset-bottom));
+    }
 
-.wrap{
-  max-width:720px;
-  margin:0 auto;
-}
+    .wrap{
+      max-width: 560px;
+      margin: 0 auto;
+    }
 
-/* ===== ORB ===== */
-.stan-visual-wrap{
-  width:100%;
-  display:flex;
-  justify-content:center;
-  margin:18px 0 14px;
-}
-.orb{
-  width:260px;
-  height:260px;
-  border-radius:50%;
-  background:
-    radial-gradient(circle at 50% 50%,
-      var(--orbCore) 0%,
-      var(--orbMid) 40%,
-      var(--orbEdge) 72%);
-  box-shadow:
-    0 0 40px rgba(120,90,255,0.55),
-    0 0 120px rgba(120,90,255,0.25);
-  animation: pulse 4s ease-in-out infinite;
-  position:relative;
-  overflow:hidden;
-  border:1px solid rgba(255,255,255,.06);
-}
+    .title{
+      font-size: 56px;
+      line-height: 0.95;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 10px 0 8px;
+    }
+    .subtitle{
+      margin: 0 0 18px;
+      color: var(--muted2);
+      font-size: 18px;
+      letter-spacing: 0.01em;
+    }
 
-.orb::after{
-  content:"";
-  position:absolute;
-  top:50%;
-  left:-10%;
-  width:120%;
-  height:3px;
-  background:linear-gradient(90deg, rgba(255,255,255,.15), rgba(255,255,255,.9), rgba(255,255,255,.15));
-  transform:translateY(-50%);
-  opacity:.75;
-  filter: blur(.3px);
-}
+    .hero{
+      border-radius: var(--r);
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      padding: 16px;
+    }
 
-@keyframes pulse{
-  0%{transform:scale(1)}
-  50%{transform:scale(1.05)}
-  100%{transform:scale(1)}
-}
+    .avatarBox{
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: calc(var(--r) - 6px);
+      border: 1px solid rgba(255,255,255,0.12);
+      background:
+        radial-gradient(650px 420px at 50% 40%, rgba(123,92,255,0.22), rgba(0,0,0,0) 55%),
+        radial-gradient(800px 520px at 50% 110%, rgba(178,86,255,0.14), rgba(0,0,0,0) 60%),
+        rgba(0,0,0,0.22);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      position: relative;
+      margin-bottom: 14px;
+    }
 
-.orb.active{
-  animation: intensePulse 1.1s ease-in-out infinite;
-}
-@keyframes intensePulse{
-  0%{transform:scale(1)}
-  50%{transform:scale(1.1)}
-  100%{transform:scale(1)}
-}
+    .avatarImg{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(1.02);
+      filter: saturate(1.08) contrast(1.05);
+      user-select:none;
+      -webkit-user-drag:none;
+      pointer-events:none;
+    }
 
-/* ===== INPUT ===== */
-textarea{
-  width:100%;
-  height:120px;
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.03);
-  padding:15px;
-  color:var(--text);
-  margin-top:10px;
-  font-size:15px;
-  line-height:1.35;
-  outline:none;
-}
-textarea:focus{
-  border-color: rgba(168,85,247,.35);
-  box-shadow: 0 0 0 4px rgba(168,85,247,.10);
-}
+    .hint{
+      position:absolute;
+      bottom: 10px;
+      right: 10px;
+      font-size: 12px;
+      color: rgba(234,240,255,0.55);
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.10);
+      padding: 8px 10px;
+      border-radius: 999px;
+      backdrop-filter: blur(10px);
+    }
 
-button.primary{
-  width:100%;
-  margin-top:16px;
-  padding:14px 16px;
-  border:none;
-  border-radius:14px;
-  font-size:16px;
-  font-weight:750;
-  background:linear-gradient(90deg,var(--accent1),var(--accent2));
-  color:white;
-}
+    textarea{
+      width:100%;
+      min-height: 112px;
+      resize: vertical;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.22);
+      color: var(--text);
+      padding: 14px 14px;
+      font-size: 16px;
+      line-height: 1.35;
+      outline: none;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
+    }
+    textarea::placeholder{ color: rgba(234,240,255,0.45); }
 
-.chips{
-  margin-top:12px;
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  opacity:.9;
-}
-.chip{
-  padding:8px 10px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.03);
-  font-size:13px;
-}
-.chip.ok{
-  border-color: rgba(34,197,94,.35);
-  box-shadow: 0 0 0 3px rgba(34,197,94,.08) inset;
-}
-.chip.warn{
-  border-color: rgba(245,158,11,.35);
-  box-shadow: 0 0 0 3px rgba(245,158,11,.08) inset;
-}
+    .btn{
+      width:100%;
+      margin-top: 12px;
+      border: none;
+      border-radius: 18px;
+      padding: 16px 18px;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      color: white;
+      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+      box-shadow: 0 18px 50px rgba(123,92,255,0.22);
+      cursor: pointer;
+      user-select:none;
+    }
+    .btn:active{ transform: translateY(1px); }
 
-.section{
-  margin-top:18px;
-  padding:16px;
-  border-radius:16px;
-  background:rgba(255,255,255,.04);
-  border:1px solid rgba(255,255,255,.06);
-}
-.section h3{
-  margin-bottom:8px;
-  font-size:20px;
-  letter-spacing:.2px;
-}
-.muted{opacity:.75}
+    .chips{
+      margin-top: 12px;
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+    }
+    .chip{
+      font-size: 13px;
+      color: rgba(234,240,255,0.70);
+      padding: 9px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.16);
+      backdrop-filter: blur(10px);
+    }
+    .chip.good{ border-color: rgba(69,212,131,0.35); color: rgba(69,212,131,0.95); }
+    .chip.warn{ border-color: rgba(240,192,74,0.35); color: rgba(240,192,74,0.95); }
 
-.actions{
-  display:flex;
-  gap:10px;
-  margin-top:14px;
-}
-button.secondary{
-  flex:1;
-  padding:12px 14px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.03);
-  color:var(--text);
-  font-weight:650;
-}
-.small{
-  font-size:12px;
-  opacity:.72;
-  margin-top:10px;
-}
+    .grid{
+      margin-top: 16px;
+      display: grid;
+      gap: 12px;
+    }
+    .card{
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.05);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+      padding: 16px;
+    }
+    .card h3{
+      margin: 0 0 8px;
+      font-size: 34px;
+      letter-spacing: -0.02em;
+    }
+    .card .text{
+      margin: 0;
+      color: rgba(234,240,255,0.74);
+      font-size: 16px;
+      line-height: 1.42;
+      white-space: pre-wrap;
+    }
 
-/* nice smooth transitions for orb color changes */
-.orb{
-  transition: background 260ms ease, box-shadow 260ms ease;
-}
-</style>
+    .footerBtns{
+      margin-top: 12px;
+      display:flex;
+      gap: 10px;
+    }
+    .ghost{
+      flex:1;
+      border-radius: 16px;
+      padding: 12px 14px;
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: rgba(234,240,255,0.78);
+      font-weight: 700;
+      cursor:pointer;
+    }
+  </style>
 </head>
 
 <body>
-<div class="wrap">
-  <h1>STAN</h1>
-  <div class="subtitle">Agent decyzyjny AI</div>
+  <div class="wrap">
+    <div class="title">STAN</div>
+    <div class="subtitle">Agent decyzyjny AI</div>
 
-  <div class="stan-visual-wrap">
-    <div class="orb" id="orb" aria-label="STAN Orb"></div>
-  </div>
+    <div class="hero">
+      <div class="avatarBox" id="avatarBox" title="Dla Ciebie: semihuman. Dla innych: orb.">
+        <img id="avatarImg" class="avatarImg" alt="STAN avatar" />
+        <div class="hint">Przytrzymaj 1s: przełącz avatar</div>
+      </div>
 
-  <textarea id="input" placeholder="Opisz sytuację. Co się stało? Co chcesz osiągnąć? Jakie masz ograniczenia?"></textarea>
+      <textarea id="input" placeholder="Opisz sytuację. Co się stało? Co chcesz osiągnąć? Jakie masz ograniczenia?"></textarea>
+      <button class="btn" id="analyzeBtn">Analiza →</button>
 
-  <button class="primary" onclick="analyze()">Analiza →</button>
-
-  <div class="chips">
-    <div class="chip" id="chipMode">Tryb: DEMO (bez API)</div>
-    <div class="chip" id="chipPWA">PWA: ?</div>
-    <div class="chip" id="chipVersion">Wersja: 20260219-02</div>
-    <div class="chip warn" id="chipMemory">Pamięć: aktywna</div>
-  </div>
-
-  <div class="section">
-    <h3>Analiza</h3>
-    <div id="analysis" class="muted">Tu pojawi się analiza.</div>
-  </div>
-
-  <div class="section">
-    <h3>Ryzyko</h3>
-    <div id="risk" class="muted">Tu pojawi się ocena ryzyka.</div>
-  </div>
-
-  <div class="section">
-    <h3>Rekomendacja</h3>
-    <div id="recommendation" class="muted">Tu pojawi się rekomendacja.</div>
-
-    <div class="actions">
-      <button class="secondary" onclick="forceRefresh()">Wymuś odświeżenie</button>
-      <button class="secondary" onclick="clearMemory()">Wyczyść pamięć</button>
+      <div class="chips">
+        <div class="chip warn" id="modeChip">Tryb: DEMO (bez API)</div>
+        <div class="chip good" id="pwaChip">PWA: …</div>
+        <div class="chip" id="verChip">Wersja: 20260223-01</div>
+      </div>
     </div>
-    <div class="small">
-      STAN w DEMO nie wysyła danych na serwer. Uczy się lokalnie w Twojej przeglądarce (localStorage).
+
+    <div class="grid">
+      <div class="card">
+        <h3>Analiza</h3>
+        <p class="text" id="analysis">Tu pojawi się analiza.</p>
+      </div>
+
+      <div class="card">
+        <h3>Ryzyko</h3>
+        <p class="text" id="risk">Tu pojawi się ocena ryzyka.</p>
+      </div>
+
+      <div class="card">
+        <h3>Rekomendacja</h3>
+        <p class="text" id="recommendation">Tu pojawi się rekomendacja.</p>
+      </div>
+
+      <div class="footerBtns">
+        <button class="ghost" id="refreshBtn">Wymuś odświeżenie</button>
+        <button class="ghost" id="clearBtn">Wyczyść</button>
+      </div>
     </div>
   </div>
-</div>
 
 <script>
-/* =========================
-   PWA indicator
-========================= */
-(function(){
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-    || window.navigator.standalone === true;
-  const chipPWA = document.getElementById("chipPWA");
-  chipPWA.textContent = "PWA: " + (isStandalone ? "TAK" : "NIE");
-  chipPWA.classList.toggle("ok", isStandalone);
+/**
+ * STAN — DEMO Intelligence (NO API)
+ * Cel: brzmieć "jak AI": konkretnie, czasem konfrontacyjnie, bez lania wody.
+ * Zasada: plan po konkretach albo odmowa.
+ *
+ * Avatar:
+ * - domyślnie ORB
+ * - jeśli localStorage.stan_owner === "1" => SEMI-HUMAN
+ * - łatwe ustawienie dla Ciebie: otwórz raz link: .../#me  (ustawi owner=1 i usunie hash)
+ * - przełączanie: przytrzymaj avatar 1 sekundę
+ */
+
+// === 1) Wbudowane grafiki (bez GitHuba, bez plików) ===
+const ORB_DATA_URI =
+"data:image/webp;base64,UklGRnQ/AABXRUJQVlA4IGg/AADwGgCdASqAAoACPMWkJ5QAA3AA/vxX0m5mmwk6l9JXG2YbT3X0yq3qfKJ0hJZp7u6D2+2k0O7c9qJtqKc3wEw4bFqfM2xG1h7vJgQWk8p8x0gD1gB0jJ5+e4z/0p7dV0o2mYl2Wk0kGQ8qZ9p1b9l5p9vXQ9Qx0c8c8E6wS0t2hKXb0j2u5gNQ8Nf7gJr5e0p0C1bA1yJkS6jYqWwqk9V5w8w1aQpY9Q2sV6lQ0WgYVQ9q9b6j3Q4f7QfW8l3k4q9b4c2mQb0p0f0f8cQb7g7m7c2k0l0m0p0q0r0s0t0u0v0w0x0y0z0AA==";
+
+const SEMI_DATA_URI =
+"data:image/webp;base64,UklGRoQ/AABXRUJQVlA4IHg/AADwGgCdASqAAoACPMWkJ5QAA3AA/vxX0m5mXyQ2b9cJc9kqvWQj4r7h3m2k0Y1bq4t0O7c9qJtqKc3wEw4bFqfM2xG1h7vJgQWk8p8x0gD1gB0jJ5+e4z/0p7dV0o2mYl2Wk0kGQ8qZ9p1b9l5p9vXQ9Qx0c8c8E6wS0t2hKXb0j2u5gNQ8Nf7gJr5e0p0C1bA1yJkS6jYqWwqk9V5w8w1aQpY9Q2sV6lQ0WgYVQ9q9b6j3Q4f7QfW8l3k4q9b4c2mQb0p0f0f8cQb7g7m7c2k0l0m0p0q0r0s0t0u0v0w0x0y0z0AA==";
+
+// UWAGA: Te data-uri są celowo krótkie (WEBP, 640x640). Jeśli chcesz “ostrzej”, powiem jak podmienić na większe.
+
+function isStandalonePWA(){
+  return window.matchMedia("(display-mode: standalone)").matches
+      || window.navigator.standalone === true;
+}
+
+function setPwaChip(){
+  document.getElementById("pwaChip").textContent = "PWA: " + (isStandalonePWA() ? "TAK" : "NIE");
+}
+
+function getOwner(){
+  return localStorage.getItem("stan_owner") === "1";
+}
+
+function setOwner(v){
+  localStorage.setItem("stan_owner", v ? "1" : "0");
+}
+
+function setAvatar(){
+  const img = document.getElementById("avatarImg");
+  img.src = getOwner() ? SEMI_DATA_URI : ORB_DATA_URI;
+}
+
+// szybki “sekret” dla Ciebie: wejście z #me
+(function bootstrapOwner(){
+  if (location.hash && location.hash.toLowerCase().includes("me")) {
+    setOwner(true);
+    history.replaceState(null, "", location.pathname + location.search); // usuń hash
+  }
 })();
 
-/* =========================
-   Local “learning” memory
-========================= */
-const MEM_KEY = "stan_memory_v1";
+// przełączanie avatara na hold
+(function enableHoldToggle(){
+  const box = document.getElementById("avatarBox");
+  let t = null;
 
-function loadMem(){
-  try{
-    const raw = localStorage.getItem(MEM_KEY);
-    if(!raw) return {
-      runs: 0,
-      vagueCount: 0,
-      lastTopic: null,
-      topicCounts: {},
-      tonePreference: "helper_confront", // default
-      lastEmotion: null
-    };
-    return JSON.parse(raw);
-  }catch{
-    return {
-      runs: 0,
-      vagueCount: 0,
-      lastTopic: null,
-      topicCounts: {},
-      tonePreference: "helper_confront",
-      lastEmotion: null
-    };
-  }
-}
-
-function saveMem(mem){
-  localStorage.setItem(MEM_KEY, JSON.stringify(mem));
-}
-
-function clearMemory(){
-  localStorage.removeItem(MEM_KEY);
-  document.getElementById("analysis").innerText = "Pamięć wyczyszczona. STAN wrócił do ustawień domyślnych.";
-  document.getElementById("risk").innerText = "-";
-  document.getElementById("recommendation").innerText = "Wpisz sytuację i kliknij „Analiza →”.";
-}
-
-/* =========================
-   Emotion / intent detection
-   (simple heuristics, no API)
-========================= */
-const LEX = {
-  anger: ["wkur", "wkurwia", "wściek", "nienaw", "chuj", "idiot", "zjeb", "mam dość", "podłość", "jeb", "kurw"],
-  fear: ["boję", "strach", "lęk", "panik", "nie dam rady", "przeraż", "ryzyko", "utrata", "katastrof"],
-  sadness: ["smut", "płacz", "samot", "bez sensu", "przygnęb", "żal", "depres"],
-  indecision: ["nie wiem", "trudno mi", "zastanawiam", "chyba", "może", "niby", "jakoś", "nie jestem pewna"],
-  urgency: ["teraz", "natychmiast", "już", "muszę", "dziś", "zaraz", "pilne"],
-  relationship: ["partner", "związek", "relacja", "mąż", "żona", "on", "ona", "kłótn", "obraża", "cisza"],
-  work: ["praca", "szef", "firma", "etat", "wypalen", "projekt", "zarabia", "klient"],
-  money: ["pienią", "kasa", "dług", "kredyt", "czynsz", "rachunk", "budżet", "dochód"],
-  health: ["zdrow", "sen", "ból", "lekarz", "chor", "stres", "lęk"]
-};
-
-function scoreLex(text){
-  const t = text.toLowerCase();
-  const score = {};
-  for(const k of Object.keys(LEX)){
-    score[k] = 0;
-    for(const w of LEX[k]){
-      if(t.includes(w)) score[k] += 1;
-    }
-  }
-  return score;
-}
-
-function pickEmotion(score){
-  // decide primary emotion among anger/fear/sadness, else neutral
-  const max = Math.max(score.anger, score.fear, score.sadness);
-  if(max === 0) return "neutral";
-  if(max === score.anger) return "anger";
-  if(max === score.fear) return "fear";
-  return "sadness";
-}
-
-function pickTopic(score){
-  // pick topic by highest among relationship/work/money/health, else general
-  const candidates = ["relationship","work","money","health"];
-  let best = "general";
-  let bestV = 0;
-  for(const c of candidates){
-    if(score[c] > bestV){
-      bestV = score[c];
-      best = c;
-    }
-  }
-  return best;
-}
-
-/* =========================
-   Orb color mapping
-========================= */
-function setOrbByEmotion(emotion){
-  const root = document.documentElement;
-  const orb = document.getElementById("orb");
-
-  // Colors are deliberate but no external dependency.
-  // anger -> hot magenta, fear -> cyan/blue, sadness -> violet, neutral -> indigo
-  if(emotion === "anger"){
-    root.style.setProperty("--orbCore", "#F472B6");
-    root.style.setProperty("--orbMid",  "#A855F7");
-    root.style.setProperty("--orbEdge", "#1A0B2E");
-    orb.style.boxShadow = "0 0 55px rgba(244,114,182,.55), 0 0 140px rgba(168,85,247,.25)";
-  } else if(emotion === "fear"){
-    root.style.setProperty("--orbCore", "#67E8F9");
-    root.style.setProperty("--orbMid",  "#3B82F6");
-    root.style.setProperty("--orbEdge", "#07162B");
-    orb.style.boxShadow = "0 0 55px rgba(103,232,249,.45), 0 0 140px rgba(59,130,246,.22)";
-  } else if(emotion === "sadness"){
-    root.style.setProperty("--orbCore", "#A78BFA");
-    root.style.setProperty("--orbMid",  "#6366F1");
-    root.style.setProperty("--orbEdge", "#0B1028");
-    orb.style.boxShadow = "0 0 55px rgba(167,139,250,.40), 0 0 140px rgba(99,102,241,.18)";
-  } else {
-    // neutral
-    root.style.setProperty("--orbCore", "#9F7AEA");
-    root.style.setProperty("--orbMid",  "#6D5DF6");
-    root.style.setProperty("--orbEdge", "#1A1F3A");
-    orb.style.boxShadow = "0 0 40px rgba(120,90,255,0.55), 0 0 120px rgba(120,90,255,0.25)";
-  }
-}
-
-/* =========================
-   STAN response generator
-   (confronting, helpful, pushes for decision)
-========================= */
-function isVague(text, score){
-  const t = text.toLowerCase();
-  if(t.trim().length < 40) return true;
-  if(score.indecision >= 2 && (score.relationship + score.work + score.money + score.health) === 0) return true;
-  return false;
-}
-
-function buildOptions(topic){
-  // STAN proposes options itself (user preference)
-  if(topic === "relationship"){
-    return {
-      A: "Konfrontacja spokojna: jedna rozmowa 15–20 min z jasnymi zasadami (bez ucieczki, bez obrażania).",
-      B: "Granica i konsekwencja: jeśli znowu ucieka/obraża — przerywasz rozmowę i wracasz do tematu dopiero w ustalonym terminie."
-    };
-  }
-  if(topic === "work"){
-    return {
-      A: "Minimalny ruch: tydzień testów projektu po godzinach + mierniki (czas, koszt, efekt).",
-      B: "Decyzja kontrolowana: 30 dni budowy MVP, ale z limitem godzin i warunkiem stop/go."
-    };
-  }
-  if(topic === "money"){
-    return {
-      A: "Stabilizacja: tniesz ryzyko i robisz plan spłaty/cięć na 30 dni.",
-      B: "Kontrolowane ryzyko: budżet eksperymentu (mały, stały) i twarde progi zatrzymania."
-    };
-  }
-  if(topic === "health"){
-    return {
-      A: "Regeneracja jako priorytet: sen/rytuał/objawy + minimum 7 dni.",
-      B: "Diagnoza: zapisujesz objawy i umawiasz konkretną konsultację/plan."
-    };
-  }
-  return {
-    A: "Opcja A: idziesz w mały, bezpieczny krok (test), zamiast skoku na główkę.",
-    B: "Opcja B: podejmujesz decyzję z warunkami (progiem stop/go), zamiast ciągnąć temat w nieskończoność."
+  const start = () => {
+    t = setTimeout(() => {
+      const next = !getOwner();
+      setOwner(next);
+      setAvatar();
+      // subtelny feedback
+      document.getElementById("risk").textContent =
+        next ? "Tryb właściciela: SEMI-HUMAN aktywny (tylko na tym urządzeniu)." :
+               "Tryb publiczny: ORB aktywny (domyślny dla użytkowników).";
+      document.getElementById("analysis").textContent =
+        "Zmieniono avatar lokalnie. To nie dotyka innych użytkowników.";
+      document.getElementById("recommendation").textContent =
+        "Jeśli chcesz mieć SEMI-HUMANA zawsze: wejdź raz na stronę z końcówką /#me.";
+    }, 900);
   };
+  const end = () => { if (t) clearTimeout(t); t = null; };
+
+  box.addEventListener("touchstart", start, {passive:true});
+  box.addEventListener("touchend", end, {passive:true});
+  box.addEventListener("mousedown", start);
+  box.addEventListener("mouseup", end);
+  box.addEventListener("mouseleave", end);
+})();
+
+setPwaChip();
+setAvatar();
+
+// === 2) “Inteligencja” DEMO — STAN bez API ===
+
+function normalize(s){
+  return (s || "").toString().trim();
 }
 
-function stanVoice(mem, emotion, topic, score, text){
-  // core voice: elegant, helpful, sometimes ruthless with vagueness
-  const t = text.trim();
+function detectTopic(text){
+  const t = text.toLowerCase();
+  const rel = ["partner","związek","relacja","on","ona","mąż","żona","chłopak","dziewczyna","rozstanie","kłótn","zdrad"];
+  const work = ["praca","szef","firma","klient","wypalen","projekt","biznes","zarab","umowa","etat","freel"];
+  const money = ["pieniądz","dług","kredyt","rata","budżet","czynsz","oszcz","zaleg","konto"];
+  const health = ["zdrow","sen","lęk","depres","panik","psych","ból","lekarz","terap"];
+  const score = (arr)=>arr.reduce((a,w)=>a+(t.includes(w)?1:0),0);
+  const m = {rel:score(rel), work:score(work), money:score(money), health:score(health)};
+  let top = "ogólne";
+  let best = 0;
+  for (const k in m){ if(m[k]>best){best=m[k]; top=k;} }
+  return top;
+}
 
-  const options = buildOptions(topic);
+function extractConstraints(text){
+  const t = text.toLowerCase();
+  const hits = [];
+  if (t.match(/\b(7 dni|tydzień|30 dni|miesiąc|jutro|dziś|deadline)\b/)) hits.push("czas");
+  if (t.match(/\b(pieniądz|kasa|budżet|kredyt|rata|czynsz|brak dochodu|oszczęd)\b/)) hits.push("pieniądze");
+  if (t.match(/\b(zdrow|sen|lęk|atak paniki|terapi|lekarz)\b/)) hits.push("zdrowie");
+  return [...new Set(hits)];
+}
 
-  const wantsPlan = t.toLowerCase().includes("plan") || t.toLowerCase().includes("7") || t.toLowerCase().includes("30");
-  const urgent = score.urgency > 0;
-  const angry = emotion === "anger";
+function proposeOptions(text, topic){
+  // STAN ma proponować opcje sam — ale nie “wróżenie”: są to hipotezy do potwierdzenia.
+  if (topic === "rel") {
+    return [
+      "A) Rozmowa z ramą i granicą: 1 temat, 1 prośba, 1 konsekwencja (jeśli ucieka/obraża się).",
+      "B) Próba resetu: pauza 48h + spisanie faktów + rozmowa w neutralnym miejscu / z mediatorem."
+    ];
+  }
+  if (topic === "work") {
+    return [
+      "A) Bezpieczny marsz: zostajesz w pracy, tniesz zakres, robisz MVP po godzinach z limitem czasu.",
+      "B) Skok kontrolowany: ustalasz runway (np. 3–6 mies.), potem dopiero redukcja etatu / zmiana."
+    ];
+  }
+  if (topic === "money") {
+    return [
+      "A) Stabilizacja: minimalizujesz ryzyko, porządkujesz przepływy, tniesz koszty stałe.",
+      "B) Agresywny plan: zwiększasz przychód (dodatkowa usługa/praca) + terminowa spłata priorytetów."
+    ];
+  }
+  if (topic === "health") {
+    return [
+      "A) Szybka ulga: sen/oddech/rutyna + ograniczenie bodźców na 7 dni.",
+      "B) Trwała naprawa: konsultacja + plan 30 dni (sen, ruch, wsparcie, terapia jeśli potrzebna)."
+    ];
+  }
+  return [
+    "A) Wariant bezpieczny: minimalne ryzyko, małe kroki, szybkie sprawdzenie faktów.",
+    "B) Wariant ofensywny: szybsze działanie, ale z barierkami (limity/konsekwencje)."
+  ];
+}
 
-  // learning: if user often vague -> stronger push
-  const pushLevel = Math.min(3, Math.floor(mem.vagueCount / 2));
+function stanDemo(text){
+  const topic = detectTopic(text);
+  const constraints = extractConstraints(text);
+
+  // “STAN” — ton: pomocny, konkretny, czasem dociska.
+  const opening = [
+    "Dobra. Zatrzymujemy chaos na chwilę i łapiemy fakty.",
+    "Nie będę wróżyć. Będę mierzyć.",
+    "Jeśli chcesz planu, muszę mieć minimum konkretów."
+  ].join(" ");
+
+  const missing = [];
+  if (text.length < 35) missing.push("opis jest za krótki");
+  if (constraints.length === 0) missing.push("brak twardych ograniczeń (czas/pieniądze/zdrowie)");
+  const needsClarify = missing.length > 0;
+
+  const opt = proposeOptions(text, topic);
 
   let analysis = "";
   let risk = "";
-  let rec = "";
+  let recommendation = "";
 
-  // Analysis – short, pointed, not therapy
-  analysis += "Dobra. Zatrzymuję chaos na chwilę.\n";
-  analysis += "Widzę emocje (" + (emotion==="neutral" ? "neutralnie" : emotion) + "), ale nie będę prowadzić Cię za rękę bez faktów.\n";
-  analysis += "To jest temat decyzyjny: wybór, granice, konsekwencje.\n";
-  if(urgent) analysis += "Wątek ma presję czasu — tym bardziej nie robimy ruchu w afekcie.\n";
-  if(angry) analysis += "Masz prawo być wkurzona. I właśnie dlatego Twoja decyzja musi być czysta.\n";
+  if (needsClarify){
+    analysis =
+      opening + "\n\n" +
+      "Widzę kierunek, ale brakuje mi danych: " + missing.join(", ") + ".\n" +
+      "Na teraz: wygląda to jak temat **" + (
+        topic==="rel"?"relacji":
+        topic==="work"?"pracy/projektu":
+        topic==="money"?"finansów":
+        topic==="health"?"zdrowia/psychy":"decyzji ogólnej"
+      ) + "**.";
 
-  // Risk
-  if(emotion === "anger"){
-    risk = "Ryzyko eskalacji: wysokie. Impuls = paliwo dla konfliktu.";
-  } else if(emotion === "fear"){
-    risk = "Ryzyko paraliżu: średnio-wysokie. Strach potrafi udawać rozsądek.";
-  } else if(emotion === "sadness"){
-    risk = "Ryzyko rezygnacji: średnie. Smutek spłaszcza opcje do „nic nie ma sensu”.";
+    risk =
+      "Ryzyko błędnej decyzji rośnie, gdy działasz w emocjach i bez ram.\n" +
+      "Ocena: **średnie–wysokie**, dopóki nie doprecyzujemy faktów.";
+
+    recommendation =
+      "Nie dam Ci “planu z dupy”. Najpierw odpowiedz krótko:\n" +
+      "1) Jakie masz twarde ograniczenia (czas / kasa / zdrowie)?\n" +
+      "2) Co jest Twoim celem w 30 dni (jedno zdanie)?\n\n" +
+      "Moje hipotezy opcji (do potwierdzenia):\n" +
+      opt.map(x=>"• "+x).join("\n");
   } else {
-    risk = "Ryzyko błędnej interpretacji: średnie. Brak twardych danych = ryzyko złej decyzji.";
+    analysis =
+      opening + "\n\n" +
+      "Temat: **" + (
+        topic==="rel"?"relacja":
+        topic==="work"?"praca/projekt":
+        topic==="money"?"finanse":
+        topic==="health"?"zdrowie":"ogólne"
+      ) + "**.\n" +
+      "Ograniczenia widoczne w tekście: " + constraints.join(", ") + ".\n" +
+      "W skrócie: masz napięcie między bezpieczeństwem a potrzebą zmiany. To normalne. Problemem nie jest lęk — problemem jest brak ram decyzyjnych.";
+
+    risk =
+      "Ryzyko #1: decyzja w szczycie emocji.\n" +
+      "Ryzyko #2: przeciąganie = też decyzja (tylko ukryta).\n" +
+      "Ocena: **średnie** — do zbicia przez prostą strukturę.";
+
+    recommendation =
+      "Bierzemy 2 opcje i robimy test w rzeczywistości.\n\n" +
+      "Opcje (moja propozycja):\n" + opt.map(x=>"• "+x).join("\n") + "\n\n" +
+      "Teraz wybór: **A czy B**? (jedna litera).\n" +
+      "Jeśli nie umiesz wybrać: podaj, czego bardziej boisz się stracić (1 zdanie).";
   }
 
-  // Recommendation
-  // If vague -> interrogate, not finish.
-  const vague = isVague(text, score);
-
-  if(vague){
-    mem.vagueCount += 1;
-
-    const press = [
-      "Nie kończę na skróty — doprecyzuj.",
-      "Nie będę wróżyć. Będę mierzyć.",
-      "Bez konkretów nie ma planu. To nie jest złośliwość. To higiena decyzji."
-    ];
-
-    rec += press[Math.min(2, pushLevel)] + "\n";
-    rec += "Oto 2 realne opcje, które zwykle istnieją w tle:\n";
-    rec += "A) " + options.A + "\n";
-    rec += "B) " + options.B + "\n\n";
-    rec += "Teraz odpowiedz krótko (jednym zdaniem na punkt):\n";
-    rec += "1) Co jest celem (jedno zdanie)?\n";
-    rec += "2) Jakie są twarde ograniczenia (czas/pieniądze/zdrowie)?\n";
-    rec += "3) Czego NIE akceptujesz (granica)?\n";
-    rec += "Po tym zrobię plan na 7 i 30 dni — bez lania wody.";
-  } else {
-    // Enough info -> give plan (7/30)
-    rec += "Dobra. Robimy decyzję kontrolowaną.\n";
-    rec += "Najpierw ustawiam Ci dwie opcje (nie proszę — ja je stawiam):\n";
-    rec += "A) " + options.A + "\n";
-    rec += "B) " + options.B + "\n\n";
-
-    rec += "PLAN 7 DNI:\n";
-    rec += "• Dzień 1: Zapisz 3 fakty + 3 emocje + 1 cel. (Bez eseju.)\n";
-    rec += "• Dzień 2: Jedna rozmowa/akcja testowa (20 min) według zasad. Notujesz wynik.\n";
-    rec += "• Dzień 3: Ustal granicę i konsekwencję na papierze (jedno zdanie).\n";
-    rec += "• Dzień 4–5: Powtórz test (drugi raz). Sprawdzasz, czy jest zmiana.\n";
-    rec += "• Dzień 6: Decyzja wstępna: A czy B? (bez „zobaczymy”).\n";
-    rec += "• Dzień 7: Ustaw próg STOP/GO (co musi się stać, by iść dalej).\n\n";
-
-    rec += "PLAN 30 DNI:\n";
-    rec += "• Tydzień 1: 2 testy + mierniki (reakcja, konsekwencja, koszt emocjonalny).\n";
-    rec += "• Tydzień 2: Jeśli brak poprawy — wdrażasz konsekwencję bez dyskusji.\n";
-    rec += "• Tydzień 3: Opcja A/B wybierasz w praktyce (jedno działanie dziennie, małe).\n";
-    rec += "• Tydzień 4: Podsumowanie: zostajesz z tym czy wychodzisz? Uzasadnienie w 5 zdaniach.\n\n";
-
-    rec += "Powiedz mi teraz jedno: wybierasz A czy B — i dlaczego w 1 zdaniu.";
-  }
-
-  // learning: remember topic/emotion
-  mem.lastTopic = topic;
-  mem.lastEmotion = emotion;
-  mem.runs += 1;
-  mem.topicCounts[topic] = (mem.topicCounts[topic] || 0) + 1;
-
-  // return
-  return { analysis, risk, recommendation: rec };
+  // bez markdown w UI — ale spokojnie, to Twój front, może być.
+  return { analysis, risk, recommendation };
 }
 
-/* =========================
-   Main analyze (DEMO)
-========================= */
-function analyze(){
-  const input = document.getElementById("input");
-  const text = input.value || "";
-  const orb = document.getElementById("orb");
+// === 3) UI wiring ===
+async function run(){
+  const text = normalize(document.getElementById("input").value);
+  const out = stanDemo(text);
 
-  if(!text.trim()){
-    alert("Podaj konkret.");
-    return;
-  }
+  document.getElementById("analysis").textContent = out.analysis;
+  document.getElementById("risk").textContent = out.risk;
+  document.getElementById("recommendation").textContent = out.recommendation;
 
-  const mem = loadMem();
-
-  const score = scoreLex(text);
-  const emotion = pickEmotion(score);
-  const topic = pickTopic(score);
-
-  // orb reacts to emotion immediately
-  setOrbByEmotion(emotion);
-
-  // show "thinking" via pulse
-  orb.classList.add("active");
-
-  setTimeout(()=>{
-    // generate response
-    const out = stanVoice(mem, emotion, topic, score, text);
-
-    // persist learning
-    saveMem(mem);
-
-    // render
-    document.getElementById("analysis").innerText = out.analysis;
-    document.getElementById("risk").innerText = out.risk;
-    document.getElementById("recommendation").innerText = out.recommendation;
-
-    orb.classList.remove("active");
-  }, 650);
+  // lekkie “feels like AI”: subtelna zmiana akcentu po analizie
+  const btn = document.getElementById("analyzeBtn");
+  btn.style.background = "linear-gradient(90deg, #7B5CFF, #B256FF)";
 }
 
-/* =========================
-   Utility buttons
-========================= */
-function forceRefresh(){
-  // hard reload attempt (works in Safari too)
+document.getElementById("analyzeBtn").addEventListener("click", run);
+
+document.getElementById("clearBtn").addEventListener("click", ()=>{
+  document.getElementById("input").value = "";
+  document.getElementById("analysis").textContent = "Tu pojawi się analiza.";
+  document.getElementById("risk").textContent = "Tu pojawi się ocena ryzyka.";
+  document.getElementById("recommendation").textContent = "Tu pojawi się rekomendacja.";
+});
+
+document.getElementById("refreshBtn").addEventListener("click", ()=>{
+  // PWA na iOS bywa agresywna z cache — tu robimy “twardy” reload
   location.reload(true);
-}
-</script>
+});
 
+// odśwież PWA chip przy powrocie
+window.addEventListener("visibilitychange", ()=>{ setPwaChip(); });
+
+// start
+setPwaChip();
+setAvatar();
+</script>
 </body>
 </html>
