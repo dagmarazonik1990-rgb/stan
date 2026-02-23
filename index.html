@@ -1,116 +1,267 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>STAN</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>STAN</title>
 
-<style>
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont;
-  background:#0B0F1A;
-  color:white;
-  padding:20px;
-}
-.card{
-  background:#111827;
-  padding:18px;
-  border-radius:14px;
-  margin-top:16px;
-}
-button{
-  width:100%;
-  padding:16px;
-  border:none;
-  border-radius:14px;
-  font-size:16px;
-  margin-top:16px;
-  background:linear-gradient(90deg,#4f8cff,#6b9dff);
-  color:white;
-}
-textarea{
-  width:100%;
-  padding:16px;
-  border-radius:14px;
-  border:none;
-  resize:none;
-  background:#1e293b;
-  color:white;
-  min-height:120px;
-}
-.title{
-  font-size:28px;
-  font-weight:700;
-}
-.subtitle{
-  opacity:.6;
-  margin-bottom:16px;
-}
-.section-title{
-  font-weight:700;
-  margin-bottom:8px;
-}
-</style>
+  <!-- iOS / PWA -->
+  <meta name="theme-color" content="#0B0F1A" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="STAN" />
+
+  <!-- cache-busters: po deployu nie ma starej wersji -->
+  <meta http-equiv="Cache-Control" content="no-store, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <link rel="manifest" href="manifest.json?v=20260219-01" />
+  <link rel="apple-touch-icon" href="icon-192.png?v=20260219-01" />
+
+  <style>
+    :root{
+      --bg:#0B0F1A;
+      --surface:#111827;
+      --card:#1A2333;
+      --text:#E5E7EB;
+      --muted:#9CA3AF;
+      --accent1:#4F7CFF;
+      --accent2:#7BA7FF;
+      --danger:#FF5A5F;
+      --ok:#34D399;
+    }
+
+    body{
+      margin:0;
+      background:linear-gradient(180deg,#0B0F1A,#0E1628);
+      font-family:-apple-system,BlinkMacSystemFont,system-ui,Segoe UI,Roboto,sans-serif;
+      color:var(--text);
+    }
+
+    .container{
+      max-width:740px;
+      margin:0 auto;
+      padding:24px;
+      padding-bottom:32px;
+    }
+
+    h1{ margin: 10px 0 4px; font-size:44px; letter-spacing:0.2px; }
+    .subtitle{ color:var(--muted); margin-bottom:20px; }
+
+    .card{
+      margin-top:18px;
+      padding:18px;
+      background:rgba(26,35,51,0.92);
+      border-radius:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    textarea{
+      width:100%;
+      height:150px;
+      padding:16px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,0.06);
+      background:rgba(17,24,39,0.9);
+      color:var(--text);
+      font-size:16px;
+      line-height:1.35;
+      resize:none;
+      outline:none;
+    }
+
+    .btn{
+      width:100%;
+      margin-top:18px;
+      padding:16px;
+      border:none;
+      border-radius:18px;
+      font-size:18px;
+      font-weight:700;
+      color:white;
+      background:linear-gradient(90deg,var(--accent1),var(--accent2));
+      box-shadow:0 10px 28px rgba(79,124,255,0.25);
+      cursor:pointer;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active{ transform: translateY(1px); }
+
+    .row{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+      flex-wrap:wrap;
+    }
+
+    .pill{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.06);
+      color:var(--muted);
+    }
+
+    .pill.ok{ color:var(--ok); border:1px solid rgba(52,211,153,0.35); }
+    .pill.bad{ color:var(--danger); border:1px solid rgba(255,90,95,0.35); }
+
+    .result-title{
+      font-weight:800;
+      font-size:22px;
+      margin:0 0 6px;
+    }
+    .muted{ color:var(--muted); white-space:pre-wrap; }
+
+    .tiny{
+      margin-top:14px;
+      font-size:12px;
+      color:rgba(156,163,175,0.75);
+    }
+
+    .linkbtn{
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.14);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      font-weight:700;
+      cursor:pointer;
+    }
+  </style>
 </head>
 
 <body>
+  <div class="container">
+    <h1>STAN</h1>
+    <div class="subtitle">Agent decyzyjny AI</div>
 
-<div class="title">STAN</div>
-<div class="subtitle">Agent decyzyjny AI</div>
+    <textarea id="input" placeholder="Opisz sytuację. Co się stało? Co chcesz osiągnąć? Jakie masz ograniczenia?"></textarea>
+    <button class="btn" id="analyzeBtn">Analiza →</button>
 
-<textarea id="input" placeholder="Opisz sytuację..."></textarea>
-<button onclick="analyze()">Analiza →</button>
+    <div class="row">
+      <div class="pill" id="modePill">Tryb: DEMO (bez API)</div>
+      <div class="pill" id="pwaPill">PWA: …</div>
+      <div class="pill" id="cachePill">Wersja: 20260219-01</div>
+    </div>
 
-<div class="card">
-<div class="section-title">Analiza</div>
-<div id="analysis">Tu pojawi się analiza.</div>
-</div>
+    <div class="card">
+      <div class="result-title">Analiza</div>
+      <div id="analysis" class="muted">Tu pojawi się analiza.</div>
+    </div>
 
-<div class="card">
-<div class="section-title">Ryzyko</div>
-<div id="risk">Tu pojawi się ocena ryzyka.</div>
-</div>
+    <div class="card">
+      <div class="result-title">Ryzyko</div>
+      <div id="risk" class="muted">Tu pojawi się ocena ryzyka.</div>
+    </div>
 
-<div class="card">
-<div class="section-title">Rekomendacja</div>
-<div id="recommendation">Tu pojawi się rekomendacja.</div>
-</div>
+    <div class="card">
+      <div class="result-title">Rekomendacja</div>
+      <div id="recommendation" class="muted">Tu pojawi się rekomendacja.</div>
+    </div>
+
+    <div class="row">
+      <button class="linkbtn" id="hardRefreshBtn">Wymuś odświeżenie</button>
+      <button class="linkbtn" id="clearBtn">Wyczyść</button>
+    </div>
+
+    <div class="tiny">
+      Jeśli po deployu apka na ekranie pokazuje starą wersję — kliknij „Wymuś odświeżenie”.
+    </div>
+  </div>
 
 <script>
-function runStanDemo(text){
-  const emotional = text.length < 120;
+/** =========
+ *  STAN DEMO (bez API) — działa zawsze (Safari + PWA)
+ *  ========= */
 
-  if(emotional){
-    return {
-      analysis: "Zatrzymajmy chaos. Widzę emocje, mało danych. To temat decyzji pod presją. Najpierw fakty, potem ruch.",
-      risk: "Ryzyko decyzji impulsywnej: średnie / wysokie.",
-      recommendation: "Odpowiedz: 1) Jakie są twarde ograniczenia (czas/pieniądze)? 2) Jakie są 2 realne opcje A/B? Potem robimy plan 7 i 30 dni."
-    };
-  } else {
-    return {
-      analysis: "Sytuacja ma strukturę. Możemy ją rozbić na cele, ograniczenia i opcje. Decyzja wymaga chłodnej sekwencji działań.",
-      risk: "Ryzyko: kontrolowane, jeśli oddzielisz emocje od faktów.",
-      recommendation: "Zrób tabelę: Opcja A / Opcja B → koszt / zysk / ryzyko. Wybierz świadomie, nie reaktywnie."
-    };
-  }
+const VERSION = "20260219-01";
+
+function isPWA() {
+  // iOS Safari standalone
+  const iosStandalone = window.navigator.standalone === true;
+  // inne przeglądarki
+  const displayModeStandalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+  return iosStandalone || displayModeStandalone;
 }
 
-function analyze(){
-  const text = document.getElementById("input").value.trim();
+function setPills() {
+  document.getElementById("pwaPill").textContent = isPWA() ? "PWA: TAK" : "PWA: NIE";
+  document.getElementById("pwaPill").className = "pill " + (isPWA() ? "ok" : "");
+  document.getElementById("modePill").textContent = "Tryb: DEMO (bez API)";
+  document.getElementById("cachePill").textContent = "Wersja: " + VERSION;
+}
 
-  if(text.length < 20){
-    alert("Napisz trochę więcej 🙂");
+function stanDemo(text) {
+  const emocje = /(boję|zła|wkurz|frustr|smutn|żal|rozbita|złość|strach|panika|bezsiln|nerw)/i.test(text);
+  const relacja = /(partner|związek|on|ona|relacja|kłótn|granice|szacunek)/i.test(text);
+  const kasa = /(pieniądz|kasa|dług|kredyt|czynsz|dochód|praca|budżet)/i.test(text);
+
+  const brakDanych = text.length < 140;
+
+  let analysis = "Dobra. Zatrzymajmy chaos na chwilę i złapmy fakty. ";
+  analysis += "Ja nie wróżę. Ja mierzę. ";
+
+  if (emocje) analysis += "Emocje są wysokie — to normalne, ale podkręca ryzyko złej decyzji. ";
+  if (relacja) analysis += "To wygląda na temat granic i równowagi w relacji (nie na jedną kłótnię). ";
+  if (kasa) analysis += "Widzę też oś bezpieczeństwa finansowego — to twardy constraint, nie 'wymówka'. ";
+  if (brakDanych) analysis += "Brakuje mi danych. I nie będę udawał, że je mam — doprecyzujemy. ";
+
+  let risk = "Ryzyko decyzji impulsywnej / błędnej interpretacji: ";
+  risk += emocje ? "wysokie (emocje wysokie, dane niepełne)." : "średnie (dane niepełne).";
+
+  let recommendation =
+    "Zanim pójdziemy dalej, odpowiedz krótko (1–2 zdania na punkt):\n" +
+    "1) Co jest celem (jeden konkretny efekt)?\n" +
+    "2) Jakie są twarde ograniczenia (czas/pieniądze/zdrowie)?\n" +
+    "3) Jakie są 2 realne opcje A/B na dziś?\n\n" +
+    "Potem zrobię Ci plan na 7 dni i 30 dni — bez lania wody. " +
+    "I jeśli będziesz uciekać w mgłę: będę miły, ale nie dam Ci się wykręcić.";
+
+  return { analysis, risk, recommendation };
+}
+
+function render(out) {
+  document.getElementById("analysis").innerText = out.analysis;
+  document.getElementById("risk").innerText = out.risk;
+  document.getElementById("recommendation").innerText = out.recommendation;
+}
+
+function analyze() {
+  const text = (document.getElementById("input").value || "").trim();
+
+  if (text.length < 15) {
+    alert("Daj mi minimum 2–3 zdania. Inaczej będę zgadywać, a nie o to chodzi.");
     return;
   }
 
-  const result = runStanDemo(text);
-
-  document.getElementById("analysis").innerText = result.analysis;
-  document.getElementById("risk").innerText = result.risk;
-  document.getElementById("recommendation").innerText = result.recommendation;
+  const out = stanDemo(text);
+  render(out);
 }
-</script>
 
+/** =========
+ *  PWA cache killer: wymuś świeżą wersję
+ *  ========= */
+function hardRefresh() {
+  // Wersjonujemy URL żeby iOS PWA nie trzymała starego cache
+  const url = new URL(window.location.href);
+  url.searchParams.set("v", VERSION);
+  url.searchParams.set("t", String(Date.now()));
+  window.location.replace(url.toString());
+}
+
+function clearAll() {
+  document.getElementById("input").value = "";
+  document.getElementById("analysis").innerText = "Tu pojawi się analiza.";
+  document.getElementById("risk").innerText = "Tu pojawi się ocena ryzyka.";
+  document.getElementById("recommendation").innerText = "Tu pojawi się rekomendacja.";
+}
+
+document.getElementById("analyzeBtn").addEventListener("click", analyze);
+document.getElementById("hardRefreshBtn").addEventListener("click", hardRefresh);
+document.getElementById("clearBtn").addEventListener("click", clearAll);
+
+setPills();
+</script>
 </body>
 </html>
