@@ -1,0 +1,9 @@
+{
+  "name": "stan",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@vercel/kv": "^1.0.1",
+    "stripe": "^14.0.0"
+  }
+}
