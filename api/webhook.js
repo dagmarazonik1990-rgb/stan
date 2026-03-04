@@ -1,9 +1,12 @@
 import Stripe from "stripe";
-import { kv } from "@vercel/kv";
 
 export const config = {
-  api: { bodyParser: false }
+  api: { bodyParser: false },
 };
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2024-06-20",
+});
 
 async function readRawBody(req) {
   const chunks = [];
@@ -13,37 +16,31 @@ async function readRawBody(req) {
 
 export default async function handler(req, res) {
   try {
-    if (req.method !== "POST") return res.status(405).send("Method not allowed");
+    if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
 
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     const sig = req.headers["stripe-signature"];
+    const whsec = process.env.STRIPE_WEBHOOK_SECRET;
+    if (!sig || !whsec) return res.status(400).send("Missing signature/webhook secret");
+
     const rawBody = await readRawBody(req);
 
-    let event;
-    try {
-      event = stripe.webhooks.constructEvent(
-        rawBody,
-        sig,
-        process.env.STRIPE_WEBHOOK_SECRET
-      );
-    } catch (err) {
-      return res.status(400).send(`Webhook Error: ${err.message}`);
+    const event = stripe.webhooks.constructEvent(rawBody, sig, whsec);
+
+    // Minimal: logika pod przyszłość (np. blokada PRO po cancel)
+    // Bez bazy danych nie cofniemy tokenów na urządzeniach, ale webhook jest gotowy.
+    switch (event.type) {
+      case "customer.subscription.deleted":
+      case "customer.subscription.updated":
+      case "invoice.payment_failed":
+      case "invoice.paid":
+        // tu w przyszłości podepniesz bazę (Supabase) i status użytkownika
+        break;
+      default:
+        break;
     }
 
-    if (event.type === "checkout.session.completed") {
-      const session = event.data.object;
-      const deviceId = session?.metadata?.deviceId;
-
-      if (deviceId) {
-        // PRO flag
-        await kv.set(`pro:${deviceId}`, "1");
-        // (opcjonalnie) zapis czasu aktywacji
-        await kv.set(`pro_since:${deviceId}`, String(Date.now()));
-      }
-    }
-
-    return res.status(200).json({ received: true });
-  } catch (e) {
-    return res.status(500).send(e?.message || "Webhook error");
+    res.json({ received: true });
+  } catch (err) {
+    res.status(400).send(`Webhook Error: ${err.message}`);
   }
 }
