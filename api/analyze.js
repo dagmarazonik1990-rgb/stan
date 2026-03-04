@@ -1,132 +1,107 @@
 export default async function handler(req, res) {
-  const reply = (analysis, risk, recommendation, status = 200) =>
-    res.status(status).json({ analysis, risk, recommendation });
-
-  if (req.method !== "POST") {
-    return reply(
-      "Ten endpoint działa tylko dla POST.",
-      "—",
-      "Wróć do aplikacji i kliknij „Analiza →”.",
-      405
-    );
-  }
-
   try {
-    const { text, mode = "hardcore", persona = "stan" } = req.body || {};
+    if (req.method !== "POST") {
+      return res.status(405).json({
+        error: "Method not allowed",
+        hint: "Ten endpoint działa tylko dla POST.",
+      });
+    }
+
+    const { text, pro } = req.body || {};
     const userText = String(text || "").trim();
 
-    if (userText.length < 40) {
-      return reply(
-        "Za mało danych. Podaj proszę: co się stało, co chcesz osiągnąć i jakie masz ograniczenia.",
-        "Ryzyko błędnej interpretacji: wysokie (za mało danych).",
-        "Dopisz 2–3 zdania: cel, ograniczenia, opcje A/B."
-      );
+    if (userText.length < 30) {
+      return res.status(200).json({
+        analysis: "Dopisz proszę 2–3 zdania: co się stało, co chcesz osiągnąć i jakie masz ograniczenia.",
+        risk: "Ryzyko błędnej interpretacji: wysokie (za mało danych).",
+        recommendation: "Uzupełnij opis — potem zrobię analizę 360° + plan 7/30 dni.",
+      });
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      return reply(
-        "Brak konfiguracji klucza API na serwerze.",
-        "Błąd konfiguracji.",
-        "Dodaj zmienną środowiskową OPENAI_API_KEY w Vercel i zrób redeploy.",
-        500
-      );
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ error: "Brak OPENAI_API_KEY w Vercel Environment Variables." });
     }
 
-    // SYSTEM: osobowość, bezpieczeństwo, brak diagnoz, brak chamstwa
-    const system = `
-Jesteś STAN — agent decyzyjny. Mówisz po polsku.
-Styl: bardzo konkretny, spokojny, premium, zero lania wody. Brzmisz jak prawdziwy asystent AI.
-Zasady bezpieczeństwa:
-- Nie stawiasz diagnoz medycznych/prawnych/finansowych. Możesz sugerować konsultację.
-- Nie jesteś chamski, nie obrażasz, nie moralizujesz.
-- Jeśli brakuje danych — zadaj maksymalnie 3 pytania doprecyzowujące.
-Format odpowiedzi: ZWRACASZ JSON z polami: analysis, risk, recommendation.
-Długość łącznie: 300–1000 słów. Piszesz w 1. osobie (np. „Widzę…”, „Proponuję…”).
-Tryb "${mode}": dociskasz konkrety, ale z klasą.
-`;
+    // Długość: baza (STAN) krócej, PRO dłużej
+    const target = pro ? "700–1000 słów" : "300–600 słów";
 
-    // USER PROMPT
-    const user = `
-Użytkownik opisał sytuację:
+    const system =
+`Jesteś STAN — agent decyzyjny. Twoim celem jest pomóc użytkownikowi podjąć decyzję w chaosie.
+Mów w pierwszej osobie, spokojnie i konkretnie. Zero chamskości.
+Nie stawiaj diagnoz medycznych/psychologicznych ani prawnych/finansowych. Zamiast tego: ostrożne zastrzeżenia i sugestie konsultacji z profesjonalistą, jeśli temat jest wysokiego ryzyka.
+Nie udawaj, że "wiesz na pewno". Pracuj na faktach z opisu i wyraźnie oddzielaj fakty od interpretacji.
+Zawsze zwracaj JSON z polami: analysis, risk, recommendation (bez markdown).`;
+
+    const prompt =
+`Użytkownik opisał sytuację:
+
 """${userText}"""
 
-Wygeneruj:
-analysis: analiza faktów vs emocje, hipotezy, co jest mierzalne, co nie.
-risk: ryzyka i pułapki (np. impuls, koszt, reputacja, relacje, zdrowie).
-recommendation: plan 7 dni + plan 30 dni + pierwszy mikrokrok (dzisiaj).
-Jeśli brakuje danych — zadaj do 3 pytań w recommendation na samej górze.
-`;
+Zrób "Analizę Decyzji 360°" w języku polskim.
 
-    // Call OpenAI Chat Completions (bez zdradzania modelu na UI)
-    const r = await fetch("https://api.openai.com/v1/chat/completions", {
+Wymagania:
+- analysis: jasna analiza: fakty, cele, ograniczenia, opcje, konsekwencje (minimum 2 opcje jeśli możliwe)
+- risk: 3–7 punktów ryzyk + ocena ogólna (niskie/średnie/wysokie) + "co by musiało się stać, żeby ryzyko spadło"
+- recommendation: plan działania 7 dni i 30 dni + 1 mikro-test w 24h + jedno pytanie doprecyzowujące tylko jeśli krytycznie brakuje danych.
+- Cel długości: ${target}
+- Ton: profesjonalny, “prawdziwy AI”, ale ludzki — zero sztuczności.
+
+Zwróć wyłącznie JSON.`;
+
+    // OpenAI Responses API (official)
+    const r = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        temperature: 0.55,
-        max_tokens: 1200,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: system.trim() },
-          { role: "user", content: user.trim() }
-        ]
-      })
+        model: "gpt-5.2",
+        input: [
+          { role: "system", content: system },
+          { role: "user", content: prompt },
+        ],
+        // Trzymamy to rozsądnie, żeby nie zabiło kosztowo
+        max_output_tokens: pro ? 1400 : 900,
+      }),
     });
 
-    const raw = await r.json();
-
+    const data = await r.json();
     if (!r.ok) {
-      const msg =
-        raw?.error?.message ||
-        "Nieznany błąd OpenAI. Sprawdź billing/limity.";
-      return reply(
-        "Nie mogę teraz dokończyć analizy — dostawca AI zwrócił błąd.",
-        `Błąd: ${msg}`,
-        "Sprawdź billing/limity w OpenAI oraz poprawność klucza. Potem spróbuj ponownie.",
-        500
-      );
+      const msg = data?.error?.message || "OpenAI error";
+      return res.status(r.status).json({ error: msg });
     }
 
-    const content = raw?.choices?.[0]?.message?.content || "{}";
-    let out = {};
-    try { out = JSON.parse(content); } catch { out = {}; }
+    // Responses API: tekst bywa w output[].content[].text
+    const out = data?.output?.[0]?.content?.[0]?.text || "";
+    let parsed = null;
 
-    const A = String(out.analysis || "").trim();
-    const R = String(out.risk || "").trim();
-    const REC = String(out.recommendation || "").trim();
-
-    // miękkie ograniczenie długości (żeby trzymać 300–1000 słów)
-    const combined = [A, R, REC].join("\n\n").trim();
-    const words = combined.split(/\s+/).filter(Boolean);
-    let clipped = combined;
-
-    if (words.length > 1000) {
-      clipped = words.slice(0, 1000).join(" ").trim() + "…";
+    try {
+      parsed = JSON.parse(out);
+    } catch {
+      // jeśli model zwrócił coś obok JSON: spróbuj wyciąć
+      const first = out.indexOf("{");
+      const last = out.lastIndexOf("}");
+      if (first >= 0 && last > first) {
+        parsed = JSON.parse(out.slice(first, last + 1));
+      }
     }
 
-    // jeśli za krótko, zostawiamy — model zwykle dobija do ~300+.
-    // rozbijamy z powrotem prostą heurystyką:
-    // (jeśli model zwrócił pola, nie tnę ich osobno)
-    if (A && R && REC) {
-      return reply(A, R, REC);
+    if (!parsed || typeof parsed !== "object") {
+      return res.status(200).json({
+        analysis: "Nie udało mi się poprawnie sformatować odpowiedzi. Spróbuj ponownie za chwilę.",
+        risk: "Ryzyko: średnie (błąd formatu odpowiedzi).",
+        recommendation: "Kliknij Analiza jeszcze raz. Jeśli błąd się powtarza, pokaż logi z Vercel Functions.",
+      });
     }
 
-    // fallback: jeśli JSON się posypał
-    return reply(
-      clipped || "Nie udało się wygenerować analizy.",
-      "—",
-      "Spróbuj ponownie za chwilę."
-    );
-
-  } catch (e) {
-    return res.status(500).json({
-      analysis: "Błąd serwera.",
-      risk: "—",
-      recommendation: "Jeśli chcesz, podeślij logi z Vercel (Runtime Logs)."
+    return res.status(200).json({
+      analysis: String(parsed.analysis || "").trim() || "—",
+      risk: String(parsed.risk || "").trim() || "—",
+      recommendation: String(parsed.recommendation || "").trim() || "—",
     });
+
+  } catch (err) {
+    return res.status(500).json({ error: err.message || "Server error" });
   }
 }
