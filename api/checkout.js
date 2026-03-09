@@ -1,56 +1,67 @@
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-06-20",
-});
-
-function baseUrl(req) {
-  const proto = req.headers["x-forwarded-proto"] || "https";
-  const host = req.headers["x-forwarded-host"] || req.headers.host;
-  return `${proto}://${host}`;
-}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
+
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
   try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ error: "Method not allowed" });
+
+    const { tier } = req.body || {};
+
+    if (!tier) {
+      return res.status(400).json({ error: "Missing tier" });
     }
 
-    const { plan } = req.body || {};
-    const priceStan = process.env.PRICE_ID_STAN;
-    const pricePro = process.env.PRICE_ID_STAN_PRO;
+    let priceId;
 
-    if (!priceStan || !pricePro) {
-      return res.status(500).json({ error: "Brak PRICE_ID w env (PRICE_ID_STAN / PRICE_ID_STAN_PRO)." });
+    if (tier === "orb") {
+      priceId = process.env.STRIPE_PRICE_ORB;
     }
 
-    const price =
-      plan === "pro" ? pricePro :
-      plan === "stan" ? priceStan :
-      null;
-
-    if (!price) {
-      return res.status(400).json({ error: "Nieprawidłowy plan. Użyj 'stan' albo 'pro'." });
+    if (tier === "semi") {
+      priceId = process.env.STRIPE_PRICE_SEMI;
     }
 
-    const url = baseUrl(req);
+    if (!priceId) {
+      return res.status(400).json({ error: "Invalid tier" });
+    }
 
-    // Subskrypcja miesięczna
     const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      line_items: [{ price, quantity: 1 }],
-      allow_promotion_codes: true,
 
-      // Wróć do aplikacji z session_id
-      success_url: `${url}/?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${url}/?canceled=1`,
+      payment_method_types: ["card"],
 
-      // Zbieramy mail — przyda się w Stripe i ewentualnym support
-      customer_creation: "always",
+      mode: "payment",
+
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1
+        }
+      ],
+
+      success_url: `${process.env.APP_URL}/?success=true`,
+      cancel_url: `${process.env.APP_URL}/?cancel=true`,
+
+      metadata: {
+        tier
+      }
+
     });
 
-    return res.status(200).json({ url: session.url });
-  } catch (err) {
-    return res.status(500).json({ error: err.message || "Checkout error" });
+    return res.status(200).json({
+      url: session.url
+    });
+
+  } catch (error) {
+
+    console.error("Checkout error:", error);
+
+    return res.status(500).json({
+      error: "Checkout failed"
+    });
   }
 }
