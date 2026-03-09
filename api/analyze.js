@@ -1,44 +1,219 @@
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const RATE_LIMIT_MAX_REQUESTS = 12;
+const MAX_TEXT_LENGTH = 4000;
+
+const ipStore = new Map();
+
+function cleanupRateLimitStore() {
+  const now = Date.now();
+  for (const [key, value] of ipStore.entries()) {
+    if (!value || now - value.windowStart > RATE_LIMIT_WINDOW_MS * 2) {
+      ipStore.delete(key);
+    }
+  }
+}
+
+function getClientIp(req) {
+  const forwarded = req.headers["x-forwarded-for"];
+  if (typeof forwarded === "string" && forwarded.trim()) {
+    return forwarded.split(",")[0].trim();
+  }
+  return req.socket?.remoteAddress || "unknown";
+}
+
+function checkRateLimit(req) {
+  cleanupRateLimitStore();
+
+  const ip = getClientIp(req);
+  const now = Date.now();
+
+  const existing = ipStore.get(ip);
+
+  if (!existing || now - existing.windowStart > RATE_LIMIT_WINDOW_MS) {
+    ipStore.set(ip, {
+      windowStart: now,
+      count: 1,
+    });
+    return { ok: true };
   }
 
+  if (existing.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return { ok: false };
+  }
+
+  existing.count += 1;
+  ipStore.set(ip, existing);
+  return { ok: true };
+}
+
+function safeString(value, max = 300) {
+  if (typeof value !== "string") return "";
+  return value.trim().slice(0, max);
+}
+
+function normalizeMode(mode) {
+  const allowed = new Set(["full", "quick", "simulate", "confront"]);
+  return allowed.has(mode) ? mode : "full";
+}
+
+function normalizeTier(tier) {
+  const allowed = new Set(["demo", "stan", "pro"]);
+  return allowed.has(tier) ? tier : "demo";
+}
+
+function sanitizeProfile(profile) {
+  if (!profile || typeof profile !== "object") {
+    return {
+      style: "",
+      risk: "",
+      area: "",
+    };
+  }
+
+  return {
+    style: safeString(profile.style, 40),
+    risk: safeString(profile.risk, 40),
+    area: safeString(profile.area, 40),
+  };
+}
+
+function clamp(num, min, max) {
+  return Math.max(min, Math.min(max, num));
+}
+
+function extractJsonFromText(text) {
+  if (typeof text !== "string") return null;
+
+  const firstBrace = text.indexOf("{");
+  const lastBrace = text.lastIndexOf("}");
+
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
+    return null;
+  }
+
+  const candidate = text.slice(firstBrace, lastBrace + 1);
+
   try {
-    const { text, tier = "demo", profile = {}, mode = "full" } = req.body || {};
+    return JSON.parse(candidate);
+  } catch {
+    return null;
+  }
+}
 
-    if (!text || !String(text).trim()) {
-      return res.status(400).json({ error: "Brak opisu sytuacji" });
-    }
+function buildFallbackResponse(userText, mode) {
+  const hasA = /(^|\n)\s*A\s*:/im.test(userText);
+  const hasB = /(^|\n)\s*B\s*:/im.test(userText);
 
-    const cleanText = String(text).trim();
+  const choice = hasA && hasB ? "A" : "NONE";
+  const confidence = hasA && hasB ? 58 : 50;
 
-    const systemPrompt = `
+  const base = {
+    analysis:
+      mode === "confront"
+        ? "Widzę napięcie decyzyjne, ale bez pełnego wyniku modelu dam tylko ostrożny fallback. Doprecyzuj cel, ograniczenia i realne koszty każdej opcji."
+        : "To jest wstępny fallback STANa. Opis wygląda sensownie, ale bez pełnego wyniku modelu warto doprecyzować cel, ograniczenia i realne konsekwencje obu opcji.",
+    risk:
+      hasA && hasB
+        ? "Największe ryzyko: decyzja podjęta zbyt szybko albo na zbyt małej liczbie danych."
+        : "Największe ryzyko: brak jasnych opcji A/B, przez co trudniej porównać decyzję.",
+    recommendation:
+      hasA && hasB
+        ? "Dopisz twarde ograniczenia, koszty i termin decyzji. To zwykle najbardziej poprawia trafność analizy."
+        : "Rozpisz decyzję w formacie A i B. STAN działa najlepiej, gdy porównuje konkretne opcje.",
+    decision: {
+      labelA: "A",
+      labelB: "B",
+      choice,
+      confidence,
+      explain:
+        hasA && hasB
+          ? "Wstępny sygnał przechyla się lekko w stronę opcji A, ale to tylko bezpieczny fallback."
+          : "Brak pełnego porównania — podaj opcje A/B.",
+    },
+    chaos: {
+      score: hasA && hasB ? 44 : 22,
+      explain:
+        hasA && hasB
+          ? "Chaos jest umiarkowany: decyzja jest opisana, ale nadal brakuje części danych."
+          : "Chaos niski do umiarkowanego, ale problemem jest brak rozbicia decyzji na opcje.",
+    },
+    card: {
+      archetype: hasA && hasB ? "Strateg" : "Obserwator",
+      dataConfidence: hasA && hasB ? "ŚREDNIE" : "NISKIE",
+      line:
+        hasA && hasB
+          ? "To nie jest jeszcze decyzja do skoku w ciemno."
+          : "Najpierw nazwij opcje, potem wybieraj.",
+      mission:
+        hasA && hasB
+          ? "Misja 24h: dopisz 3 realne koszty i 3 realne korzyści dla A oraz B."
+          : "Misja 24h: zapisz decyzję jako A i B oraz nazwij cel.",
+    },
+    redFlags: {
+      score: hasA && hasB ? 36 : 18,
+      items: hasA && hasB
+        ? [
+            "Za mało twardych danych do mocnego werdyktu.",
+            "Ryzyko decyzji pod wpływem napięcia.",
+          ]
+        : ["Brak rozpisanych opcji A/B."],
+      fix: hasA && hasB
+        ? "Dopisz koszty, termin i warunki brzegowe obu opcji."
+        : "Rozbij problem na A i B.",
+    },
+    simulation:
+      mode === "simulate"
+        ? "Symulacja fallback: bez pełnej analizy warto porównać, co stanie się po 7 dniach, 30 dniach i 90 dniach dla opcji A i B."
+        : "",
+  };
+
+  return base;
+}
+
+function buildSystemPrompt({ mode, tier, profile }) {
+  return `
 Jesteś STAN.
-
-Strategiczny doradca decyzji.
+Jesteś strategicznym doradcą decyzji.
 Mówisz po polsku.
-Jesteś konkretny, chłodny, użyteczny.
-Nie diagnozujesz ludzi.
+Masz być konkretny, klarowny i użyteczny.
 Nie moralizujesz.
-Nie brzmisz jak terapeuta.
-Masz analizować decyzje, ryzyko, chaos, konsekwencje i plan działania.
+Nie diagnozujesz zaburzeń ani ludzi.
+Nie udajesz terapeuty.
+Nie używasz reklamowego bełkotu.
+Nie piszesz zbyt długo.
 
-Masz zwrócić WYŁĄCZNIE poprawny JSON.
+Twoje zadanie:
+1. przeanalizować sytuację
+2. wskazać ryzyka
+3. oszacować chaos decyzyjny
+4. wskazać czerwone flagi
+5. dać rekomendację
+6. jeśli są opcje A/B — oszacować, która ma większy sens
+7. jeśli tryb to symulacja — pokazać skutki A/B
+8. jeśli tryb to konfrontacja — być ostrzejszym i wskazać uniki myślowe
+
+Kontekst użytkownika:
+- tryb: ${mode}
+- tier: ${tier}
+- styl decyzji: ${profile.style || "brak"}
+- tolerancja ryzyka: ${profile.risk || "brak"}
+- obszar decyzji: ${profile.area || "brak"}
+
+ZWRÓĆ WYŁĄCZNIE POPRAWNY JSON.
 Bez markdown.
 Bez komentarzy.
-Bez żadnego tekstu przed JSON i po JSON.
+Bez dodatkowego tekstu.
 
-Zwracaj dokładnie taki format:
-
+Schemat JSON:
 {
   "analysis": "string",
   "risk": "string",
   "recommendation": "string",
   "decision": {
-    "choice": "A | B | NONE",
-    "confidence": 0,
     "labelA": "A",
     "labelB": "B",
+    "choice": "A | B | NONE",
+    "confidence": 0,
     "explain": "string"
   },
   "chaos": {
@@ -53,148 +228,190 @@ Zwracaj dokładnie taki format:
   },
   "redFlags": {
     "score": 0,
-    "items": ["string", "string", "string"],
+    "items": ["string"],
     "fix": "string"
   },
   "simulation": "string"
 }
 
-Zasady:
-1. Jeśli użytkownik podał opcje A: i B:, oceń wybór między nimi.
-2. Jeśli użytkownik NIE podał A/B:
-   - ustaw decision.choice = "NONE"
-   - decision.confidence = 50
-   - labelA = "A"
-   - labelB = "B"
-   - explain ma jasno powiedzieć, że trzeba doprecyzować opcje
-   - ALE nadal zrób użyteczną analizę sytuacji
-   - zaproponuj tymczasowy kierunek i plan
-3. confidence to liczba 0-100.
-4. chaos.score to liczba 0-100:
-   - 0-25 niski chaos
-   - 26-55 średni chaos
-   - 56-100 wysoki chaos
-5. dataConfidence:
-   - NISKIE, gdy danych jest mało
-   - ŚREDNIE, gdy danych jest trochę
-   - WYSOKIE, gdy sytuacja jest dobrze opisana
-6. "card.line" ma być krótka, mocna, share'owalna.
-7. "card.mission" ma być konkretnym mini-planem na teraz.
-8. "redFlags.score" to liczba 0-100.
-9. "redFlags.items" ma zawierać 2-4 najważniejsze czerwone flagi decyzji.
-10. "redFlags.fix" ma być jedną konkretną naprawą.
-11. "simulation" uzupełnij tylko wtedy, gdy mode = "simulate" albo mode = "confront". W innym trybie daj pusty string.
-12. Gdy mode = "quick", odpowiedzi mają być krótsze.
-13. Gdy mode = "confront", odpowiedź ma być ostrzejsza, ale bez obrażania użytkownika.
-14. Gdy mode = "simulate", pokaż zwięźle scenariusz A vs B.
-15. Jeśli sytuacja dotyczy pracy, pieniędzy, relacji, zdrowia, zachowuj rozsądek i konkret.
-16. Jeśli danych jest mało, nie zmyślaj szczegółów — nazwij brak danych wprost.
-17. "analysis", "risk" i "recommendation" mają być gotowe do pokazania userowi w UI.
-18. "recommendation" ma zawierać plan 24h / 7 dni / 30 dni w krótkiej formie.
-19. "archetype" ma być prosty i chwytliwy, np. Strateg, Realista, Ryzykant, Unikacz, Opiekun, Kontroler.
-20. Dla trybu "confront" wolno użyć ostrzejszego tonu typu:
-   "Tu nie brakuje motywacji. Tu brakuje decyzji."
-   ale bez wyzwisk.
+Zasady jakości:
+- confidence ma być liczbą 0-100
+- chaos.score ma być liczbą 0-100
+- redFlags.score ma być liczbą 0-100
+- redFlags.items: 0-4 krótkie punkty
+- gdy brakuje A/B, choice = "NONE"
+- gdy nie ma symulacji, simulation = ""
+- analysis, risk i recommendation mają być konkretne
+- red flags mają dotyczyć decyzji, a nie diagnozy psychicznej
+- jeśli opis jest zbyt krótki, pokaż to uczciwie
+- jeśli ryzyko jest duże, nazwij je jasno
 
-Profil użytkownika:
-- styl decyzji: ${profile?.style || "nieznany"}
-- ryzyko: ${profile?.risk || "nieznane"}
-- obszar: ${profile?.area || "ogólne"}
-
-Plan użytkownika:
-- tier: ${tier}
-- mode: ${mode}
+Dodatkowe wytyczne per tryb:
+- full: pełna analiza
+- quick: krócej, bardziej konkretnie
+- simulate: mocniejsza sekcja simulation
+- confront: wskaż uniki, samooszukiwanie, wygodne racjonalizacje, ale bez obrażania
 `;
+}
 
-    const userPrompt = `
-Przeanalizuj tę sytuację i zwróć JSON w wymaganym formacie.
+function validateModelResponse(data) {
+  if (!data || typeof data !== "object") return false;
+  if (typeof data.analysis !== "string") return false;
+  if (typeof data.risk !== "string") return false;
+  if (typeof data.recommendation !== "string") return false;
+  if (!data.decision || typeof data.decision !== "object") return false;
+  if (!data.chaos || typeof data.chaos !== "object") return false;
+  if (!data.card || typeof data.card !== "object") return false;
+  if (!data.redFlags || typeof data.redFlags !== "object") return false;
+  return true;
+}
 
-Sytuacja użytkownika:
-${cleanText}
-`;
+function normalizeModelResponse(data) {
+  const decisionChoiceRaw = safeString(data?.decision?.choice, 10).toUpperCase();
+  const decisionChoice =
+    decisionChoiceRaw === "A" || decisionChoiceRaw === "B" ? decisionChoiceRaw : "NONE";
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        temperature: mode === "quick" ? 0.4 : 0.7,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ]
-      })
+  const redFlagItems = Array.isArray(data?.redFlags?.items)
+    ? data.redFlags.items
+        .map((item) => safeString(item, 120))
+        .filter(Boolean)
+        .slice(0, 4)
+    : [];
+
+  return {
+    analysis: safeString(data.analysis, 1600),
+    risk: safeString(data.risk, 1000),
+    recommendation: safeString(data.recommendation, 1000),
+    decision: {
+      labelA: safeString(data?.decision?.labelA || "A", 40) || "A",
+      labelB: safeString(data?.decision?.labelB || "B", 40) || "B",
+      choice: decisionChoice,
+      confidence: clamp(Number(data?.decision?.confidence || 50), 0, 100),
+      explain: safeString(data?.decision?.explain, 500),
+    },
+    chaos: {
+      score: clamp(Number(data?.chaos?.score || 0), 0, 100),
+      explain: safeString(data?.chaos?.explain, 500),
+    },
+    card: {
+      archetype: safeString(data?.card?.archetype, 60) || "—",
+      dataConfidence: ["NISKIE", "ŚREDNIE", "WYSOKIE"].includes(
+        safeString(data?.card?.dataConfidence, 20).toUpperCase()
+      )
+        ? safeString(data.card.dataConfidence, 20).toUpperCase()
+        : "ŚREDNIE",
+      line: safeString(data?.card?.line, 220) || "—",
+      mission: safeString(data?.card?.mission, 400) || "—",
+    },
+    redFlags: {
+      score: clamp(Number(data?.redFlags?.score || 0), 0, 100),
+      items: redFlagItems,
+      fix: safeString(data?.redFlags?.fix, 400) || "Doprecyzuj dane i ograniczenia decyzji.",
+    },
+    simulation: safeString(data?.simulation, 900),
+  };
+}
+
+export default async function handler(req, res) {
+  res.setHeader("Cache-Control", "no-store");
+
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  const rate = checkRateLimit(req);
+  if (!rate.ok) {
+    return res.status(429).json({
+      error: "Za dużo prób. Odczekaj chwilę i spróbuj ponownie.",
     });
+  }
 
-    const data = await response.json();
+  try {
+    const body = req.body && typeof req.body === "object" ? req.body : {};
 
-    if (!response.ok) {
-      console.error("OpenAI error:", data);
-      return res.status(500).json({
-        error: data?.error?.message || "Błąd OpenAI"
+    const text = safeString(body.text, MAX_TEXT_LENGTH + 100);
+    const mode = normalizeMode(body.mode);
+    const tier = normalizeTier(body.tier);
+    const profile = sanitizeProfile(body.profile);
+
+    if (!text) {
+      return res.status(400).json({ error: "Brak opisu sytuacji." });
+    }
+
+    if (text.length > MAX_TEXT_LENGTH) {
+      return res.status(400).json({
+        error: `Opis jest za długi. Limit: ${MAX_TEXT_LENGTH} znaków.`,
       });
     }
 
-    const raw = data?.choices?.[0]?.message?.content;
-
-    if (!raw) {
-      return res.status(500).json({ error: "Brak odpowiedzi modelu" });
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({
+        error: "Brak konfiguracji środowiska dla analizy.",
+      });
     }
 
-    let parsed;
+    const systemPrompt = buildSystemPrompt({ mode, tier, profile });
+
+    const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        temperature: mode === "quick" ? 0.35 : 0.5,
+        response_format: { type: "json_object" },
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt,
+          },
+          {
+            role: "user",
+            content: text,
+          },
+        ],
+      }),
+    });
+
+    const raw = await openaiResponse.json();
+
+    if (!openaiResponse.ok) {
+      const apiMessage =
+        raw?.error?.message || "Błąd po stronie modelu analizy.";
+      return res.status(openaiResponse.status).json({
+        error: apiMessage,
+      });
+    }
+
+    const content = raw?.choices?.[0]?.message?.content || "";
+    let parsed = null;
+
     try {
-      parsed = JSON.parse(raw);
-    } catch (e) {
-      console.error("JSON parse error:", raw);
-      return res.status(500).json({ error: "Model zwrócił niepoprawny JSON" });
+      parsed = JSON.parse(content);
+    } catch {
+      parsed = extractJsonFromText(content);
     }
 
-    const result = {
-      analysis: parsed?.analysis || "Brak analizy.",
-      risk: parsed?.risk || "Brak oceny ryzyka.",
-      recommendation: parsed?.recommendation || "Brak rekomendacji.",
-      decision: {
-        choice: parsed?.decision?.choice || "NONE",
-        confidence: Number.isFinite(Number(parsed?.decision?.confidence))
-          ? Math.max(0, Math.min(100, Number(parsed.decision.confidence)))
-          : 50,
-        labelA: parsed?.decision?.labelA || "A",
-        labelB: parsed?.decision?.labelB || "B",
-        explain: parsed?.decision?.explain || "Brak wyjaśnienia."
-      },
-      chaos: {
-        score: Number.isFinite(Number(parsed?.chaos?.score))
-          ? Math.max(0, Math.min(100, Number(parsed.chaos.score)))
-          : 0,
-        explain: parsed?.chaos?.explain || "Brak opisu chaosu."
-      },
-      card: {
-        archetype: parsed?.card?.archetype || "Realista",
-        dataConfidence: parsed?.card?.dataConfidence || "ŚREDNIE",
-        line: parsed?.card?.line || "Decyzja wymaga doprecyzowania.",
-        mission: parsed?.card?.mission || "Zbierz dane i dopisz plan na 24h."
-      },
-      redFlags: {
-        score: Number.isFinite(Number(parsed?.redFlags?.score))
-          ? Math.max(0, Math.min(100, Number(parsed.redFlags.score)))
-          : 0,
-        items: Array.isArray(parsed?.redFlags?.items)
-          ? parsed.redFlags.items.slice(0, 4).map(x => String(x))
-          : [],
-        fix: parsed?.redFlags?.fix || "Doprecyzuj opcje i dopisz plan B."
-      },
-      simulation: parsed?.simulation || ""
-    };
+    if (!validateModelResponse(parsed)) {
+      const fallback = buildFallbackResponse(text, mode);
+      return res.status(200).json(fallback);
+    }
 
-    return res.status(200).json(result);
+    const normalized = normalizeModelResponse(parsed);
+
+    if (mode !== "simulate") {
+      normalized.simulation = "";
+    }
+
+    return res.status(200).json(normalized);
   } catch (error) {
-    console.error("Analyze handler error:", error);
+    console.error("STAN analyze error:", error);
+
     return res.status(500).json({
-      error: error?.message || "Błąd analizy"
+      error: "Błąd analizy. Spróbuj ponownie za chwilę.",
     });
   }
 }
