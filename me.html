@@ -1,203 +1,333 @@
 <!doctype html>
 <html lang="pl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#120a22" />
-  <title>STAN • ME</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>STAN — Konto</title>
 
-  <link rel="manifest" href="/manifest-me.json" />
-  <link rel="icon" href="/icon-192.png.PNG" />
+<style>
 
-  <style>
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      color:rgba(255,255,255,.92);
-      background:
-        radial-gradient(1200px 900px at 10% 5%, rgba(139,92,246,.34), transparent 60%),
-        radial-gradient(900px 800px at 90% 10%, rgba(79,70,229,.22), transparent 55%),
-        linear-gradient(180deg, #120a22, #05030a);
-      min-height:100%;
-      padding: 22px 18px calc(22px + env(safe-area-inset-bottom));
-    }
-    .wrap{max-width:820px;margin:0 auto}
-    h1{margin:10px 0 6px;font-size:56px;line-height:1;font-weight:900}
-    .sub{color:rgba(255,255,255,.62);font-size:18px;margin-bottom:16px}
+:root{
+--bg:#05030a;
+--panel:rgba(255,255,255,.06);
+--stroke:rgba(255,255,255,.12);
+--txt:rgba(255,255,255,.92);
+--muted:rgba(255,255,255,.6);
+--accent:#8b5cf6;
+}
 
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 22px;
-      overflow:hidden;
-      box-shadow: 0 18px 60px rgba(0,0,0,.55);
-    }
-    .in{padding:18px}
+*{box-sizing:border-box}
 
-    .avatar{
-      height: 360px;
-      border-radius: 18px;
-      border:1px solid rgba(255,255,255,.12);
-      background: radial-gradient(700px 450px at 50% 40%, rgba(139,92,246,.26), rgba(0,0,0,.35));
-      overflow:hidden;
-      position:relative;
-    }
-    .avatar::before{
-      content:"";
-      position:absolute; inset:-40%;
-      background:
-        radial-gradient(circle at 50% 40%, rgba(139,92,246,.55), transparent 52%),
-        radial-gradient(circle at 40% 65%, rgba(56,189,248,.14), transparent 55%),
-        radial-gradient(circle at 65% 70%, rgba(167,139,250,.18), transparent 60%);
-      filter: blur(22px);
-      animation: glowFloat 6.5s ease-in-out infinite;
-      opacity:.9;
-      pointer-events:none;
-    }
-    @keyframes glowFloat{
-      0%,100%{transform: translate3d(0,0,0) scale(1)}
-      50%{transform: translate3d(2%, -1.5%, 0) scale(1.04)}
-    }
+body{
+margin:0;
+font-family:system-ui;
+color:var(--txt);
 
-    img{
-      position:absolute; inset:0;
-      width:100%; height:100%;
-      object-fit: cover;
-      transform: translate3d(var(--px,0px), var(--py,0px), 0) scale(1.02);
-      transition: transform .10s linear;
-      filter: saturate(1.06) contrast(1.02);
-    }
-    .scanline{
-      position:absolute; left:-20%; right:-20%;
-      top:48%;
-      height:2px;
-      background: linear-gradient(90deg, transparent, rgba(185,132,255,.55), transparent);
-      opacity:.65;
-      animation: scan 3.2s ease-in-out infinite;
-      pointer-events:none;
-    }
-    @keyframes scan{
-      0%,100%{transform: translateY(0); opacity:.45}
-      50%{transform: translateY(6px); opacity:.78}
-    }
+background:
+radial-gradient(1000px 600px at 10% 0%, rgba(139,92,246,.3), transparent),
+linear-gradient(180deg,#1b0f36,#05030a);
 
-    textarea{
-      width:100%;
-      min-height: 130px;
-      resize: vertical;
-      border-radius: 16px;
-      padding: 14px 14px;
-      background: rgba(0,0,0,.25);
-      border:1px solid rgba(255,255,255,.12);
-      color: rgba(255,255,255,.92);
-      outline:none;
-      font-size: 16px;
-      line-height: 1.35;
-      margin-top:12px;
-    }
-    textarea::placeholder{color: rgba(255,255,255,.45)}
-    button{
-      border: 1px solid rgba(255,255,255,.12);
-      background: linear-gradient(90deg, rgba(139,92,246,.95), rgba(79,70,229,.95));
-      color: rgba(255,255,255,.92);
-      padding: 12px 14px;
-      border-radius: 14px;
-      font-size: 15px;
-      cursor:pointer;
-      font-weight:800;
-      margin-top:10px;
-    }
-    .panel{
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.22);
-      padding: 12px 14px;
-      margin-top:12px;
-    }
-    .panel h3{margin:0 0 6px; font-size:15px; color: rgba(255,255,255,.86)}
-    .panel p{margin:0; color: rgba(255,255,255,.68); white-space:pre-wrap; line-height:1.35}
-    footer{
-      margin-top: 14px;
-      color: rgba(255,255,255,.45);
-      font-size: 12px;
-      text-align:center;
-      padding: 16px 8px 4px;
-    }
-  </style>
+padding:24px;
+}
+
+.container{
+max-width:700px;
+margin:auto;
+}
+
+h1{
+font-size:40px;
+margin-bottom:6px;
+}
+
+.sub{
+color:var(--muted);
+margin-bottom:24px;
+}
+
+.panel{
+background:var(--panel);
+border:1px solid var(--stroke);
+border-radius:20px;
+padding:18px;
+margin-bottom:16px;
+backdrop-filter:blur(12px);
+}
+
+.panel h2{
+margin-top:0;
+font-size:18px;
+}
+
+.row{
+display:flex;
+gap:12px;
+flex-wrap:wrap;
+margin-top:12px;
+}
+
+button{
+border-radius:14px;
+border:1px solid var(--stroke);
+background:rgba(255,255,255,.07);
+color:var(--txt);
+padding:12px 14px;
+cursor:pointer;
+}
+
+button.primary{
+background:linear-gradient(90deg,#8b5cf6,#4f46e5);
+}
+
+button.danger{
+background:rgba(255,92,122,.1);
+border-color:rgba(255,92,122,.4);
+}
+
+.tag{
+display:inline-block;
+border-radius:999px;
+padding:6px 12px;
+background:rgba(139,92,246,.2);
+font-size:12px;
+}
+
+select{
+width:100%;
+margin-top:6px;
+padding:10px;
+border-radius:10px;
+border:1px solid var(--stroke);
+background:#0b0716;
+color:white;
+}
+
+.info{
+font-size:14px;
+color:var(--muted);
+margin-top:6px;
+}
+
+footer{
+margin-top:40px;
+text-align:center;
+color:rgba(255,255,255,.4);
+font-size:12px;
+}
+
+</style>
 </head>
+
 <body>
-  <div class="wrap">
-    <h1>STAN</h1>
-    <div class="sub">Agent decyzyjny AI • ME</div>
 
-    <div class="card">
-      <div class="in">
-        <div class="avatar" id="box">
-          <img id="img" src="/avatar-semi.PNG" alt="STAN ME" />
-          <div class="scanline"></div>
-        </div>
+<div class="container">
 
-        <textarea id="input" placeholder="Opisz sytuację. Co się stało, co chcesz osiągnąć, jakie masz ograniczenia?"></textarea>
-        <button id="go">Analiza →</button>
+<h1>STAN</h1>
+<div class="sub">Panel użytkownika</div>
 
-        <div class="panel"><h3>Analiza</h3><p id="analysis">Tu pojawi się analiza.</p></div>
-        <div class="panel"><h3>Ryzyko</h3><p id="risk">Tu pojawi się ocena ryzyka.</p></div>
-        <div class="panel"><h3>Rekomendacja</h3><p id="rec">Tu pojawi się rekomendacja.</p></div>
-      </div>
-    </div>
+<div class="panel">
 
-    <footer><strong>STAN</strong> — wszelkie prawa zastrzeżone.</footer>
-  </div>
+<h2>Plan</h2>
 
-  <script>
-    const box = document.getElementById("box");
-    const img = document.getElementById("img");
-    const input = document.getElementById("input");
-    const go = document.getElementById("go");
-    const analysis = document.getElementById("analysis");
-    const risk = document.getElementById("risk");
-    const rec = document.getElementById("rec");
+<div id="planTag" class="tag">DEMO</div>
 
-    box.addEventListener("pointermove", (e)=>{
-      const r = box.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - 0.5;
-      const y = (e.clientY - r.top) / r.height - 0.5;
-      const px = Math.max(-8, Math.min(8, x * 14));
-      const py = Math.max(-6, Math.min(6, y * 12));
-      img.style.setProperty("--px", px + "px");
-      img.style.setProperty("--py", py + "px");
-    });
+<div class="info">
+ORB — analiza decyzji  
+SEMI — tryb PRO z pełną analizą
+</div>
 
-    go.addEventListener("click", async ()=>{
-      const text = String(input.value||"").trim();
-      if(text.length < 30){
-        analysis.textContent = "Dopisz proszę 2–3 zdania: co się stało, co chcesz osiągnąć i jakie masz ograniczenia.";
-        risk.textContent = "Ryzyko błędnej interpretacji: wysokie (za mało danych).";
-        rec.textContent = "Uzupełnij opis — potem zrobię analizę 360° + plan 7/30 dni.";
-        return;
-      }
-      go.disabled = true;
-      go.textContent = "Analizuję…";
-      try{
-        const r = await fetch("/api/analyze", {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body: JSON.stringify({ text, pro: true })
-        });
-        const j = await r.json();
-        if(!r.ok) throw new Error(j?.error || "Błąd analizy");
-        analysis.textContent = j.analysis || "—";
-        risk.textContent = j.risk || "—";
-        rec.textContent = j.recommendation || "—";
-      } catch(e){
-        analysis.textContent = "Nie mogę teraz dokończyć analizy.";
-        risk.textContent = "Błąd: " + e.message;
-        rec.textContent = "Sprawdź konfigurację (billing/klucze).";
-      } finally {
-        go.disabled = false;
-        go.textContent = "Analiza →";
-      }
-    });
-  </script>
+<div class="row">
+<button onclick="upgrade()">Kup plan</button>
+<button onclick="back()">Powrót</button>
+</div>
+
+</div>
+
+<div class="panel">
+
+<h2>Profil decyzyjny</h2>
+
+<div class="info">Pomaga STANowi lepiej interpretować Twoje decyzje.</div>
+
+<label>Styl podejmowania decyzji</label>
+<select id="style">
+<option value="">—</option>
+<option>analityczny</option>
+<option>intuicyjny</option>
+<option>mieszany</option>
+</select>
+
+<label>Akceptacja ryzyka</label>
+<select id="risk">
+<option value="">—</option>
+<option>niska</option>
+<option>średnia</option>
+<option>wysoka</option>
+</select>
+
+<label>Obszar decyzji</label>
+<select id="area">
+<option value="">—</option>
+<option>życie</option>
+<option>relacje</option>
+<option>finanse</option>
+<option>biznes</option>
+</select>
+
+<div class="row">
+<button class="primary" onclick="saveProfile()">Zapisz profil</button>
+</div>
+
+</div>
+
+<div class="panel">
+
+<h2>Dane aplikacji</h2>
+
+<div class="info">
+STAN zapisuje historię i ustawienia lokalnie na Twoim urządzeniu.
+</div>
+
+<div class="row">
+<button onclick="clearHistory()">Wyczyść historię</button>
+<button class="danger" onclick="resetAll()">Resetuj wszystko</button>
+</div>
+
+</div>
+
+<div class="panel">
+
+<h2>Informacje</h2>
+
+<div class="info">
+STAN to system wspierający decyzje życiowe poprzez analizę chaosu,
+ryzyka i konsekwencji.
+</div>
+
+<div class="info">
+Brak reklam.  
+Brak sprzedaży danych użytkownika.
+</div>
+
+</div>
+
+<footer>
+STAN — wszelkie prawa zastrzeżone
+</footer>
+
+</div>
+
+<script>
+
+const KEY={
+token:"stan_access_token_v1",
+profile:"stan_profile_v1",
+history:"stan_history_v1"
+}
+
+function parseJwt(token){
+try{
+const p=token.split(".")[1]
+return JSON.parse(atob(p))
+}catch{return null}
+}
+
+function tier(){
+
+const t=localStorage.getItem(KEY.token)
+
+if(!t) return "DEMO"
+
+const d=parseJwt(t)
+
+if(!d) return "DEMO"
+
+if(d.tier==="pro") return "PRO"
+
+if(d.tier==="stan") return "STAN"
+
+return "DEMO"
+
+}
+
+function refreshPlan(){
+
+document.getElementById("planTag").innerText=tier()
+
+}
+
+function upgrade(){
+
+alert("Zakup planu odbywa się z poziomu aplikacji głównej.")
+
+}
+
+function back(){
+
+location.href="/"
+
+}
+
+function saveProfile(){
+
+const profile={
+
+style:document.getElementById("style").value,
+risk:document.getElementById("risk").value,
+area:document.getElementById("area").value
+
+}
+
+localStorage.setItem(KEY.profile,JSON.stringify(profile))
+
+alert("Profil zapisany")
+
+}
+
+function loadProfile(){
+
+try{
+
+const p=JSON.parse(localStorage.getItem(KEY.profile)||"{}")
+
+if(p.style)document.getElementById("style").value=p.style
+if(p.risk)document.getElementById("risk").value=p.risk
+if(p.area)document.getElementById("area").value=p.area
+
+}catch{}
+
+}
+
+function clearHistory(){
+
+if(confirm("Usunąć historię decyzji?")){
+
+localStorage.removeItem(KEY.history)
+
+alert("Historia wyczyszczona")
+
+}
+
+}
+
+function resetAll(){
+
+if(confirm("Usunąć wszystkie dane STAN z tego urządzenia?")){
+
+localStorage.clear()
+
+alert("Dane usunięte")
+
+location.reload()
+
+}
+
+}
+
+refreshPlan()
+loadProfile()
+
+</script>
+
 </body>
 </html>
