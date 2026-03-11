@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STAN App</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-row sidebar-brand">
+        <div class="brand-mark">S</div>
+        <div>
+          <div class="brand-name">STAN</div>
+          <div class="brand-tag" id="sidebarPlan">Plan: FREE</div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-title">Konto</div>
+        <div id="userSummary" class="muted-text">Ładowanie...</div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-title">Pamięć decyzji</div>
+        <div id="decisionList" class="decision-list"></div>
+      </div>
+    </aside>
+
+    <main class="app-main">
+      <section class="composer-card glow-card">
+        <div class="section-top-row">
+          <div>
+            <div class="eyebrow">STAN v4 B</div>
+            <h1 class="app-title">Decision Memory + follow-up + plan ready pod SaaS</h1>
+          </div>
+          <a class="text-link" href="/">← Landing</a>
+        </div>
+
+        <label class="input-label" for="title">Tytuł decyzji</label>
+        <input id="title" class="text-input" type="text" placeholder="Np. Czy zmienić pracę?" />
+
+        <label class="input-label" for="situation">Opisz sytuację</label>
+        <textarea id="situation" class="main-textarea" placeholder="Opisz swoją sytuację możliwie konkretnie..."></textarea>
+
+        <div class="mode-grid">
+          <button class="mode-btn active" data-mode="full" type="button">Pełna analiza</button>
+          <button class="mode-btn" data-mode="quick" type="button">60 sekund</button>
+          <button class="mode-btn" data-mode="reality" type="button">Reality Check</button>
+        </div>
+
+        <div class="cta-row">
+          <button id="analyzeBtn" class="primary-btn" type="button">Analizuj</button>
+          <button id="newUserBtn" class="secondary-btn" type="button">Nowy użytkownik demo</button>
+          <button id="unlockProBtn" class="secondary-btn" type="button">Odblokuj PRO demo</button>
+        </div>
+
+        <div id="statusBox" class="status-box muted-text">Gotowe.</div>
+      </section>
+
+      <section id="paywallBox" class="paywall-card hidden">
+        <div class="eyebrow">STAN PRO</div>
+        <h2>Limit FREE został wykorzystany</h2>
+        <p>
+          W docelowej wersji tutaj podłączysz Stripe. Na razie przycisk PRO działa
+          jako demo, żebyś mogła sprawdzić cały flow.
+        </p>
+        <button id="paywallUnlockBtn" class="primary-btn" type="button">Odblokuj PRO demo</button>
+      </section>
+
+      <section id="resultSection" class="result-card hidden">
+        <div class="section-top-row">
+          <h2>Wynik analizy</h2>
+          <button id="exportBtn" class="ghost-btn" type="button">Drukuj / PDF</button>
+        </div>
+        <div id="resultMeta" class="result-meta muted-text"></div>
+        <pre id="resultOutput" class="result-output"></pre>
+      </section>
+
+      <section id="followupSection" class="followup-card hidden">
+        <div class="section-top-row">
+          <h2>Follow-up</h2>
+          <span class="muted-text">Dodaj to później do tej decyzji</span>
+        </div>
+
+        <label class="input-label" for="followupOutcome">Co się wydarzyło?</label>
+        <select id="followupOutcome" class="text-input">
+          <option value="">Wybierz ocenę</option>
+          <option value="good">Wyszło dobrze</option>
+          <option value="mixed">Mieszanie / średnio</option>
+          <option value="bad">Wyszło źle</option>
+        </select>
+
+        <label class="input-label" for="followupNotes">Notatka follow-up</label>
+        <textarea id="followupNotes" class="mini-textarea" placeholder="Co się stało po decyzji? Co Cię zaskoczyło?"></textarea>
+
+        <button id="saveFollowupBtn" class="primary-btn" type="button">Zapisz follow-up</button>
+      </section>
+    </main>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
