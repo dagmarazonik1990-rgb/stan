@@ -5,9 +5,10 @@
       "runtime": "nodejs18.x"
     }
   },
-  "routes": [
-    { "handle": "filesystem" },
-    { "src": "/", "dest": "/public/index.html" },
-    { "src": "/app", "dest": "/public/app.html" }
+  "rewrites": [
+    { "source": "/", "destination": "/public/index.html" },
+    { "source": "/app.html", "destination": "/public/app.html" },
+    { "source": "/app.js", "destination": "/public/app.js" },
+    { "source": "/styles.css", "destination": "/public/styles.css" }
   ]
 }
