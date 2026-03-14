@@ -107,6 +107,7 @@ function nl2brSafe(value) {
 
 function buildResultHtml(analysis) {
   const text = String(analysis || "").trim();
+
   if (!text) {
     return `
       <div>
@@ -137,11 +138,7 @@ function buildResultHtml(analysis) {
         <strong>Mały krok</strong><br>
         ${escapeHtml(third)}
       </div>
-      ${
-        rest.length
-          ? `<div>${nl2brSafe(rest.join("\n"))}</div>`
-          : ""
-      }
+      ${rest.length ? `<div>${nl2brSafe(rest.join("\n"))}</div>` : ""}
     `;
   }
 
@@ -216,4 +213,288 @@ function animateRouter(router) {
           el.stepRisk.classList.add("done");
         }
       },
-      () =>
+      () => {
+        if (el.stepPattern) {
+          el.stepPattern.textContent = `✓ Wzorzec: ${router?.reasoningHint || "analiza sytuacji"}`;
+          el.stepPattern.classList.add("done");
+        }
+      },
+      () => {
+        if (el.stepMode) {
+          el.stepMode.textContent = `✓ Tryb: ${router?.recommendedMode || selectedMode}`;
+          el.stepMode.classList.add("done");
+        }
+      }
+    ];
+
+    let i = 0;
+    const interval = setInterval(() => {
+      steps[i]();
+      i += 1;
+
+      if (i === steps.length) {
+        clearInterval(interval);
+        setTimeout(resolve, 250);
+      }
+    }, 220);
+  });
+}
+
+function renderDecisionList(decisions) {
+  if (!el.decisionList) return;
+
+  if (!decisions.length) {
+    el.decisionList.innerHTML = `<div class="decision-item-meta">Brak zapisanych decyzji.</div>`;
+    return;
+  }
+
+  el.decisionList.innerHTML = decisions
+    .map((decision) => {
+      return `
+        <button class="decision-item" data-decision-id="${escapeHtml(decision.id)}" type="button">
+          <div class="decision-item-title">${escapeHtml(decision.title || "Bez tytułu")}</div>
+          <div class="decision-item-meta">${escapeHtml(signalLabel(decision.signal))}</div>
+          <div class="decision-item-meta">${escapeHtml(formatDate(decision.createdAt))}</div>
+          <div class="decision-item-meta">${escapeHtml(outcomeLabel(decision.followup?.outcome))}</div>
+        </button>
+      `;
+    })
+    .join("");
+
+  document.querySelectorAll("[data-decision-id]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      await loadDecision(button.dataset.decisionId);
+    });
+  });
+}
+
+function renderDecision(decision) {
+  currentDecisionId = decision.id;
+
+  if (el.resultSection) el.resultSection.classList.remove("hidden");
+  if (el.followupSection) el.followupSection.classList.remove("hidden");
+
+  if (el.resultMeta) {
+    el.resultMeta.textContent = `${(decision.mode || DEFAULT_MODE).toUpperCase()} · ${formatDate(decision.createdAt)}`;
+  }
+
+  if (el.resultOutput) {
+    el.resultOutput.innerHTML = buildResultHtml(decision.analysis);
+  }
+
+  if (el.resultSignal) {
+    el.resultSignal.textContent = decision.signal || "—";
+  }
+
+  if (el.title) {
+    el.title.value = decision.title || "";
+  }
+
+  if (el.situation) {
+    el.situation.value = decision.situation || "";
+  }
+
+  if (el.followupOutcome) {
+    el.followupOutcome.value = decision.followup?.outcome || "";
+  }
+
+  if (el.followupNotes) {
+    el.followupNotes.value = decision.followup?.notes || "";
+  }
+
+  setMode(decision.mode || DEFAULT_MODE);
+}
+
+async function refreshDashboard() {
+  const userId = getUserId();
+  const data = await api(`/user?userId=${encodeURIComponent(userId)}`);
+  renderDecisionList(data.decisions || []);
+}
+
+async function loadDecision(decisionId) {
+  const userId = getUserId();
+  const data = await api(
+    `/decision?userId=${encodeURIComponent(userId)}&decisionId=${encodeURIComponent(decisionId)}`
+  );
+  renderDecision(data.decision);
+  await refreshDashboard();
+
+  if (el.resultSection) {
+    el.resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+async function analyze() {
+  const title = el.title?.value.trim() || "";
+  const situation = el.situation?.value.trim() || "";
+
+  if (!situation) {
+    setStatus("Najpierw opisz sytuację.");
+    return;
+  }
+
+  setStatus("STAN analizuje...");
+  if (el.paywallBox) el.paywallBox.classList.add("hidden");
+  showLoader();
+
+  try {
+    const userId = getUserId();
+    const fullSituation = selectedCategory
+      ? `Kategoria użytkownika: ${selectedCategory}\n\n${situation}`
+      : situation;
+
+    const data = await api("/analyze", {
+      method: "POST",
+      body: JSON.stringify({
+        userId,
+        title,
+        situation: fullSituation,
+        mode: selectedMode
+      })
+    });
+
+    await animateRouter(data.router || null);
+    hideLoader();
+
+    currentDecisionId = data.decision.id;
+    renderDecision(data.decision);
+    await refreshDashboard();
+    setStatus("Analiza gotowa.");
+
+    if (el.resultSection) {
+      el.resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  } catch (error) {
+    hideLoader();
+
+    if (error.message === "FREE_LIMIT_REACHED") {
+      if (el.paywallBox) el.paywallBox.classList.remove("hidden");
+      setStatus("FREE limit osiągnięty. Odblokuj PRO demo.");
+      return;
+    }
+
+    setStatus(error.message || "Coś poszło nie tak.");
+  }
+}
+
+async function saveFollowup() {
+  if (!currentDecisionId) {
+    setStatus("Najpierw zapisz analizę decyzji.");
+    return;
+  }
+
+  const outcome = el.followupOutcome?.value || "";
+  const notes = el.followupNotes?.value.trim() || "";
+
+  if (!outcome) {
+    setStatus("Wybierz ocenę follow-upu.");
+    return;
+  }
+
+  try {
+    const userId = getUserId();
+    const data = await api("/followup", {
+      method: "POST",
+      body: JSON.stringify({
+        userId,
+        decisionId: currentDecisionId,
+        outcome,
+        notes
+      })
+    });
+
+    renderDecision(data.decision);
+    await refreshDashboard();
+    setStatus("Follow-up zapisany.");
+  } catch (error) {
+    setStatus(error.message || "Nie udało się zapisać follow-upu.");
+  }
+}
+
+async function unlockPro() {
+  try {
+    const userId = getUserId();
+    await api("/plan", {
+      method: "POST",
+      body: JSON.stringify({ userId, plan: "pro" })
+    });
+
+    if (el.paywallBox) el.paywallBox.classList.add("hidden");
+    setStatus("PRO demo odblokowane.");
+  } catch (error) {
+    setStatus(error.message || "Nie udało się odblokować PRO demo.");
+  }
+}
+
+async function createNewDemoUser() {
+  try {
+    const data = await api("/user", { method: "POST" });
+
+    localStorage.setItem("stan_user_id", data.user.id);
+    currentDecisionId = null;
+    selectedCategory = "";
+
+    if (el.resultSection) el.resultSection.classList.add("hidden");
+    if (el.followupSection) el.followupSection.classList.add("hidden");
+    if (el.paywallBox) el.paywallBox.classList.add("hidden");
+
+    if (el.title) el.title.value = "";
+    if (el.situation) el.situation.value = "";
+    if (el.followupOutcome) el.followupOutcome.value = "";
+    if (el.followupNotes) el.followupNotes.value = "";
+
+    await refreshDashboard();
+    setStatus("Utworzono nowego użytkownika demo.");
+  } catch (error) {
+    setStatus(error.message || "Nie udało się utworzyć użytkownika demo.");
+  }
+}
+
+window.setCategory = setCategory;
+
+el.modeButtons.forEach((button) => {
+  button.addEventListener("click", () => setMode(button.dataset.mode));
+});
+
+if (el.analyzeBtn) {
+  el.analyzeBtn.addEventListener("click", analyze);
+}
+
+if (el.saveFollowupBtn) {
+  el.saveFollowupBtn.addEventListener("click", saveFollowup);
+}
+
+if (el.newUserBtn) {
+  el.newUserBtn.addEventListener("click", createNewDemoUser);
+}
+
+if (el.unlockProBtn) {
+  el.unlockProBtn.addEventListener("click", unlockPro);
+}
+
+if (el.paywallUnlockBtn) {
+  el.paywallUnlockBtn.addEventListener("click", unlockPro);
+}
+
+if (el.navPlus) {
+  el.navPlus.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (el.situation) el.situation.focus();
+  });
+}
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
+  });
+}
+
+(async function init() {
+  try {
+    setMode(DEFAULT_MODE);
+    await refreshDashboard();
+    setStatus("Gotowe.");
+  } catch (error) {
+    setStatus(error.message || "Nie udało się załadować danych demo.");
+  }
+})();
