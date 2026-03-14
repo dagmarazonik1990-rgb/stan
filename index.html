@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>STAN — Strategiczny doradca decyzji</title>
+  <meta name="description" content="STAN pomaga analizować decyzje, odkrywać wzorce i planować kolejne kroki." />
+  <meta name="theme-color" content="#12081f" />
+
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="STAN" />
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="/icon-192.png.PNG" />
+  <link rel="stylesheet" href="styles.css?v=40" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-orb" aria-hidden="true"></div>
+
+        <div class="brand-copy">
+          <h1>STAN</h1>
+          <p>Strategiczny doradca decyzji<br>decyzje, konsekwencje, plan</p>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <button class="icon-btn" type="button" aria-label="Tryb STAN">🪐</button>
+        <button class="icon-btn" type="button" aria-label="Menu">☰</button>
+      </div>
+    </header>
+
+    <section class="hero-card">
+      <div class="plan-row">
+        <div class="plan-copy">
+          <h2>Plan ORB — 29 zł / miesiąc</h2>
+          <p>SEMI (PRO) — 39 zł / miesiąc • głębsza analiza, tryby premium, mocniejsza obecność</p>
+        </div>
+      </div>
+
+      <div class="orb-stage">
+        <div class="avatar-chip">ORB</div>
+
+        <div class="orb-ring">
+          <div class="main-orb" id="mainOrb" aria-hidden="true"></div>
+        </div>
+
+        <div class="orb-caption">
+          STAN nie podejmuje decyzji za Ciebie.<br>
+          Pomaga zobaczyć konsekwencje, ryzyko i chaos.
+        </div>
+      </div>
+
+      <div class="input-card">
+        <input id="title" class="input hidden" type="text" placeholder="Tytuł decyzji" />
+
+        <textarea
+          id="situation"
+          class="prompt-box"
+          placeholder="Opisz swoją sytuację...
+co się dzieje, czego chcesz, czego się boisz"
+        ></textarea>
+
+        <div class="mode-row">
+          <button class="mode-btn active" type="button" data-mode="full">Analiza</button>
+          <button class="mode-btn" type="button" data-mode="quick">Szybka</button>
+          <button class="mode-btn" type="button" data-mode="reality">Konfrontacja</button>
+        </div>
+
+        <div class="cta-row">
+          <button id="analyzeBtn" class="primary-btn" type="button">Analizuj decyzję</button>
+        </div>
+
+        <div class="cta-row">
+          <button id="unlockProBtn" class="secondary-btn" type="button">Odblokuj PRO demo</button>
+          <button id="newUserBtn" class="ghost-btn" type="button">Nowy użytkownik demo</button>
+        </div>
+
+        <div id="installBanner" class="install-banner hidden">
+          <div class="install-copy">
+            <strong>Zainstaluj STAN</strong>
+            <span id="installHint">Dodaj do ekranu głównego, żeby działał jak aplikacja.</span>
+          </div>
+          <div class="install-actions">
+            <button id="installBtn" class="secondary-btn install-btn" type="button">Zainstaluj</button>
+            <button id="dismissInstallBtn" class="ghost-btn install-btn" type="button">Później</button>
+          </div>
+        </div>
+
+        <div id="statusBox" class="status-box">Gotowe.</div>
+      </div>
+    </section>
+
+    <section id="analysisLoader" class="panel-card hidden">
+      <h3 class="panel-title">STAN analizuje Twoją sytuację</h3>
+      <div class="loader-steps">
+        <div id="stepCategory">○ Kategoria</div>
+        <div id="stepRisk">○ Ryzyko</div>
+        <div id="stepPattern">○ Wzorzec</div>
+        <div id="stepMode">○ Tryb odpowiedzi</div>
+      </div>
+    </section>
+
+    <section id="paywallBox" class="paywall-card hidden">
+      <h3>Limit FREE osiągnięty</h3>
+      <p>W tej wersji możesz odblokować PRO demo jednym kliknięciem.</p>
+      <div class="paywall-actions">
+        <button id="paywallUnlockBtn" class="primary-btn" type="button">Odblokuj PRO demo</button>
+        <button class="secondary-btn" type="button">Później</button>
+      </div>
+    </section>
+
+    <section id="resultSection" class="result-card hidden">
+      <div id="resultMeta" class="result-meta">ANALIZA · teraz</div>
+
+      <div class="signal-chip">
+        <span>Sygnał decyzji</span>
+        <strong id="resultSignal">—</strong>
+      </div>
+
+      <div id="resultOutput" class="result-output"></div>
+
+      <div class="result-actions">
+        <button id="shareCardBtn" class="secondary-btn" type="button">Udostępnij kartę</button>
+        <button class="ghost-btn" type="button" onclick="document.getElementById('followupSection')?.scrollIntoView({ behavior: 'smooth' })">
+          Follow-up później
+        </button>
+      </div>
+    </section>
+
+    <div class="panel-stack">
+      <section class="history-card" id="historySection">
+        <div class="history-head">
+          <div>
+            <h3 class="panel-title">Historia</h3>
+            <p>Twoje zapisane analizy i wzorce.</p>
+          </div>
+        </div>
+
+        <div id="decisionList" class="decision-list">
+          <div class="decision-item-meta">Brak zapisanych decyzji.</div>
+        </div>
+      </section>
+
+      <section id="followupSection" class="followup-card hidden">
+        <div class="followup-head">
+          <div>
+            <h3 class="panel-title">Follow-up</h3>
+            <p>Sprawdź po czasie, co wydarzyło się naprawdę.</p>
+          </div>
+        </div>
+
+        <div class="followup-grid">
+          <div>
+            <label class="field-label" for="followupOutcome">Co się wydarzyło?</label>
+            <select id="followupOutcome" class="select">
+              <option value="">Wybierz ocenę</option>
+              <option value="good">Wyszło dobrze</option>
+              <option value="mixed">Mieszanie / średnio</option>
+              <option value="bad">Wyszło źle</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="field-label" for="followupNotes">Notatka follow-up</label>
+            <textarea id="followupNotes" class="textarea" placeholder="Co się stało po czasie?"></textarea>
+          </div>
+
+          <button id="saveFollowupBtn" class="primary-btn" type="button">Zapisz follow-up</button>
+        </div>
+      </section>
+    </div>
+
+    <footer class="stan-footer">
+      STAN (Original) © 2026 — Wszelkie prawa zastrzeżone
+    </footer>
+
+    <div class="bottom-space"></div>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Dolna nawigacja">
+    <a class="nav-item" href="#">
+      <span class="nav-icon">⌂</span>
+      <span>Start</span>
+    </a>
+
+    <a class="nav-item" href="#historySection">
+      <span class="nav-icon">🗂️</span>
+      <span>Historia</span>
+    </a>
+
+    <button class="nav-plus" type="button" aria-label="Nowa decyzja">+</button>
+
+    <a class="nav-item" href="#">
+      <span class="nav-icon">◉</span>
+      <span>Semi</span>
+    </a>
+
+    <a class="nav-item" href="#">
+      <span class="nav-icon">👤</span>
+      <span>Konto</span>
+    </a>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="app.js?v=40"></script>
+</body>
+</html>
