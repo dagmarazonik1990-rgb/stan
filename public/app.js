@@ -483,12 +483,6 @@ if (el.navPlus) {
   });
 }
 
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js").catch(() => {});
-  });
-}
-
 (async function init() {
   try {
     setMode(DEFAULT_MODE);
